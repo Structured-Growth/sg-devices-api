@@ -7,11 +7,8 @@ export const DeviceSearchParamsValidator = joi.object({
 			orgId: joi.number().positive().label("Organization Id"),
 			accountId: joi.number().positive().label("Account Id"),
 			userId: joi.number().positive().label("User Id"),
-			deviceCategoryId: joi.string().valid("medical").label("Device category Id"),
-			deviceTypeId: joi
-				.string()
-				.valid("pulse", "blood_pressure", "weight", "body_scale", "glucose_meter")
-				.label("Device type Id"),
+			deviceCategoryId: joi.number().positive().label("Device category Id"),
+			deviceTypeId: joi.number().positive().label("Device type Id"),
 			manufacturer: joi.string().max(50).label("Manufacturer"),
 			modelNumber: joi.string().max(50).label("Model number"),
 			serialNumber: joi.string().max(100).label("Serial number"),

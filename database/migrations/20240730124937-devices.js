@@ -28,11 +28,11 @@ module.exports = {
 				allowNull: false,
 			},
 			device_category_id: {
-				type: Sequelize.STRING(50),
+				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
 			device_type_id: {
-				type: Sequelize.STRING(50),
+				type: Sequelize.INTEGER,
 				allowNull: false,
 			},
 			manufacturer: Sequelize.STRING(50),
@@ -40,7 +40,7 @@ module.exports = {
 			serial_number: Sequelize.STRING(100),
 			imei: Sequelize.STRING(50),
 			status: {
-				type: Sequelize.STRING(10),
+				type: Sequelize.STRING(15),
 				allowNull: false,
 			},
 			created_at: Sequelize.DATE,

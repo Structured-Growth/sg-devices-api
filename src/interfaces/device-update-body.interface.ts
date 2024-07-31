@@ -1,6 +1,10 @@
-import { DeviceAttributes } from "../../database/models/device";
+import { DeviceAttributes, EnumDeviceCategoryId, EnumDeviceTypeId } from "../../database/models/device";
 
 export interface DeviceUpdateBodyInterface {
+	accountId?: number;
+	userId?: number;
+	deviceCategoryId?: EnumDeviceCategoryId;
+	deviceTypeId?: EnumDeviceTypeId;
 	manufacturer?: string;
 	modelNumber?: string;
 	serialNumber?: string;

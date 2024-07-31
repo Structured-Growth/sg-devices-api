@@ -1,21 +1,21 @@
-import { BelongsTo, Column, DataType, ForeignKey, Model, Table } from "sequelize-typescript";
+import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { container, RegionEnum, DefaultModelInterface } from "@structured-growth/microservice-sdk";
 
-export enum DeviceCategoryId {
-	MEDICAL = "medical",
+export enum EnumDeviceCategoryId {
+	MEDICAL = 1,
 }
-export enum DeviceTypeId {
-	PULSE = "pulse",
-	BLOOD_PRESSURE = "blood_pressure",
-	WEIGHT = "weight",
-	BODY_SCALE = "body_scale",
-	GLUCOSE_METER = "glucose_meter",
+export enum EnumDeviceTypeId {
+	PULSE = 1,
+	BLOOD_PRESSURE = 2,
+	WEIGHT = 3,
+	BODY_SCALE = 4,
+	GLUCOSE_METER = 5,
 }
 
 export interface DeviceAttributes extends DefaultModelInterface {
 	userId: number;
-	deviceCategoryId: DeviceCategoryId;
-	deviceTypeId: DeviceTypeId;
+	deviceCategoryId: EnumDeviceCategoryId;
+	deviceTypeId: EnumDeviceTypeId;
 	manufacturer?: string | null;
 	modelNumber?: string | null;
 	serialNumber?: string | null;
@@ -28,7 +28,18 @@ export interface DeviceCreationAttributes
 
 export interface DeviceUpdateAttributes
 	extends Partial<
-		Pick<DeviceCreationAttributes, "manufacturer" | "modelNumber" | "serialNumber" | "imei" | "status">
+		Pick<
+			DeviceCreationAttributes,
+			| "accountId"
+			| "userId"
+			| "deviceCategoryId"
+			| "deviceTypeId"
+			| "manufacturer"
+			| "modelNumber"
+			| "serialNumber"
+			| "imei"
+			| "status"
+		>
 	> {}
 
 @Table({
@@ -51,10 +62,10 @@ export class Device extends Model<DeviceAttributes, DeviceCreationAttributes> im
 	userId: number;
 
 	@Column
-	deviceCategoryId: DeviceCategoryId;
+	deviceCategoryId: EnumDeviceCategoryId;
 
 	@Column
-	deviceTypeId: DeviceTypeId;
+	deviceTypeId: EnumDeviceTypeId;
 
 	@Column
 	manufacturer: string;
@@ -72,25 +83,11 @@ export class Device extends Model<DeviceAttributes, DeviceCreationAttributes> im
 	status: DeviceAttributes["status"];
 
 	static get arnPattern(): string {
-		return [
-			container.resolve("appPrefix"),
-			"<region>",
-			"<orgId>",
-			"<accountId>",
-			"<userId>",
-			"devices/<deviceId>",
-		].join(":");
+		return [container.resolve("appPrefix"), "<region>", "<orgId>", "<accountId>", "devices/<deviceId>"].join(":");
 	}
 
 	get arn(): string {
-		return [
-			container.resolve("appPrefix"),
-			this.region,
-			this.orgId,
-			this.accountId,
-			this.userId,
-			`devices/${this.id}`,
-		].join(":");
+		return [container.resolve("appPrefix"), this.region, this.orgId, this.accountId, `devices/${this.id}`].join(":");
 	}
 }
 
