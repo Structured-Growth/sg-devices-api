@@ -1,10 +1,10 @@
 import { Column, DataType, Model, Table } from "sequelize-typescript";
 import { container, RegionEnum, DefaultModelInterface } from "@structured-growth/microservice-sdk";
 
-export enum EnumDeviceCategoryId {
+export enum DeviceCategoryIdEnum {
 	MEDICAL = 1,
 }
-export enum EnumDeviceTypeId {
+export enum DeviceTypeIdEnum {
 	PULSE = 1,
 	BLOOD_PRESSURE = 2,
 	WEIGHT = 3,
@@ -12,10 +12,11 @@ export enum EnumDeviceTypeId {
 	GLUCOSE_METER = 5,
 }
 
-export interface DeviceAttributes extends DefaultModelInterface {
-	userId: number;
-	deviceCategoryId: EnumDeviceCategoryId;
-	deviceTypeId: EnumDeviceTypeId;
+export interface DeviceAttributes extends Omit<DefaultModelInterface, "accountId"> {
+	accountId?: number;
+	userId?: number;
+	deviceCategoryId: DeviceCategoryIdEnum;
+	deviceTypeId: DeviceTypeIdEnum;
 	manufacturer?: string | null;
 	modelNumber?: string | null;
 	serialNumber?: string | null;
@@ -62,10 +63,10 @@ export class Device extends Model<DeviceAttributes, DeviceCreationAttributes> im
 	userId: number;
 
 	@Column
-	deviceCategoryId: EnumDeviceCategoryId;
+	deviceCategoryId: DeviceCategoryIdEnum;
 
 	@Column
-	deviceTypeId: EnumDeviceTypeId;
+	deviceTypeId: DeviceTypeIdEnum;
 
 	@Column
 	manufacturer: string;

@@ -5,8 +5,8 @@ export const DeviceCreateParamsValidator = joi.object({
 	body: joi.object({
 		orgId: joi.number().positive().required().label("Organization Id"),
 		region: joi.string().required().min(2).max(10).label("Region"),
-		accountId: joi.number().positive().required().label("Account Id"),
-		userId: joi.number().positive().required().label("User Id"),
+		accountId: joi.number().positive().label("Account Id"),
+		userId: joi.number().positive().label("User Id"),
 		deviceCategoryId: joi.number().positive().required().label("Device category Id"),
 		deviceTypeId: joi.number().positive().required().label("Device type Id"),
 		manufacturer: joi.string().max(50).label("Manufacturer"),
