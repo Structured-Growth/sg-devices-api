@@ -3,6 +3,8 @@ import "./load-environment";
 import { App } from "./app";
 import { container, Lifecycle, logWriters, Logger } from "@structured-growth/microservice-sdk";
 import { loadEnvironment } from "./load-environment";
+import { DevicesRepository } from "../modules/devices/devices.repository";
+import { DevicesService } from "../modules/devices/devices.service";
 
 // load and validate env variables
 loadEnvironment();
@@ -21,5 +23,10 @@ container.register("logResponses", { useValue: process.env.LOG_HTTP_RESPONSES ==
 container.register("LogWriter", logWriters[process.env.LOG_WRITER] || "ConsoleLogWriter", {
 	lifecycle: Lifecycle.Singleton,
 });
+container.register("DevicesService", DevicesService);
+
+// repositories
+container.register("DevicesRepository", DevicesRepository);
+
 container.register("Logger", Logger);
 container.register("App", App, { lifecycle: Lifecycle.Singleton });

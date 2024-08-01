@@ -22,12 +22,12 @@ router.post(pathPrefix + '/v1/system/migrate', handleRequest(Controllers.SystemC
 //PingController
 router.get(pathPrefix + '/v1/ping/alive', handleRequest(Controllers.PingController, "pingGet", handlerOpts));
 
-//ExampleController
-router.get(pathPrefix + '/v1/examples', handleRequest(Controllers.ExampleController, "search", handlerOpts));
-router.post(pathPrefix + '/v1/examples', handleRequest(Controllers.ExampleController, "create", handlerOpts));
-router.get(pathPrefix + '/v1/examples/:exampleId', handleRequest(Controllers.ExampleController, "get", handlerOpts));
-router.put(pathPrefix + '/v1/examples/:exampleId', handleRequest(Controllers.ExampleController, "update", handlerOpts));
-router.delete(pathPrefix + '/v1/examples/:exampleId', handleRequest(Controllers.ExampleController, "delete", handlerOpts));
+//DevicesController
+router.get(pathPrefix + '/v1/devices', handleRequest(Controllers.DevicesController, "search", handlerOpts));
+router.post(pathPrefix + '/v1/devices', handleRequest(Controllers.DevicesController, "create", handlerOpts));
+router.get(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "get", handlerOpts));
+router.put(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "update", handlerOpts));
+router.delete(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "delete", handlerOpts));
 
 //ResolverController
 router.get(pathPrefix + '/v1/resolver/resolve', handleRequest(Controllers.ResolverController, "resolve", handlerOpts));
@@ -38,11 +38,11 @@ router.get(pathPrefix + '/v1/resolver/models', handleRequest(Controllers.Resolve
 export const actionToRouteMap = {
 	"SystemController.migrate": 'post /v1/system/migrate',
 	"PingController.pingGet": 'get /v1/ping/alive',
-	"ExampleController.search": 'get /v1/examples',
-	"ExampleController.create": 'post /v1/examples',
-	"ExampleController.get": 'get /v1/examples/:exampleId',
-	"ExampleController.update": 'put /v1/examples/:exampleId',
-	"ExampleController.delete": 'delete /v1/examples/:exampleId',
+	"DevicesController.search": 'get /v1/devices',
+	"DevicesController.create": 'post /v1/devices',
+	"DevicesController.get": 'get /v1/devices/:deviceId',
+	"DevicesController.update": 'put /v1/devices/:deviceId',
+	"DevicesController.delete": 'delete /v1/devices/:deviceId',
 	"ResolverController.resolve": 'get /v1/resolver/resolve',
 	"ResolverController.actions": 'get /v1/resolver/actions',
 	"ResolverController.models": 'get /v1/resolver/models',
