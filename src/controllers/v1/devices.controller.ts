@@ -80,12 +80,12 @@ export class DevicesController extends BaseController {
 	@ValidateFuncArgs(DeviceCreateParamsValidator)
 	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
-		const report = await this.devicesRepository.create(body);
+		const device = await this.devicesRepository.create(body);
 		this.response.status(201);
 
 		return {
-			...(pick(report.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
-			arn: report.arn,
+			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
+			arn: device.arn,
 		};
 	}
 
