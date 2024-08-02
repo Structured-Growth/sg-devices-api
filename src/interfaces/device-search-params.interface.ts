@@ -4,8 +4,18 @@ import { DeviceAttributes, DeviceCategoryIdEnum, DeviceTypeIdEnum } from "../../
 export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInterface, "accountId"> {
 	accountId?: number;
 	userId?: number;
-	deviceCategoryId?: DeviceCategoryIdEnum;
-	deviceTypeId?: DeviceTypeIdEnum;
+	/**
+	 * 1 - MEDICAL DEVICES
+	 */
+	deviceCategoryId?: number;
+	/**
+	 * 1 - PULSE<br />
+	 * 2 - BLOOD_PRESSURE<br />
+	 * 3 - WEIGHT<br />
+	 * 4 - BODY_SCALE<br />
+	 * 5 - GLUCOSE_METER<br />
+	 */
+	deviceTypeId?: number;
 	manufacturer?: string;
 	modelNumber?: string;
 	serialNumber?: string;
