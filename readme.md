@@ -1,4 +1,4 @@
-# API service Starter Kit
+# Devices API
 
 ## Features
 
