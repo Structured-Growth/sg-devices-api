@@ -25,7 +25,7 @@ export class DevicesRepository
 		params.status && (where["status"] = params.status);
 		params.id && (where["id"] = params.id);
 		params.deviceCategoryId && (where["deviceCategoryId"] = params.deviceCategoryId);
-		params.deviceTypeId && (where["deviceTypeId"] = params.deviceTypeId);
+		params.deviceTypeId && (where["deviceTypeId"] = { [Op.in]: params.deviceTypeId });
 		params.manufacturer && (where["manufacturer"] = params.manufacturer);
 		params.modelNumber && (where["modelNumber"] = params.modelNumber);
 		params.serialNumber && (where["serialNumber"] = params.serialNumber);

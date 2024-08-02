@@ -15,7 +15,7 @@ export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInt
 	 * 4 - BODY_SCALE<br />
 	 * 5 - GLUCOSE_METER<br />
 	 */
-	deviceTypeId?: number;
+	deviceTypeId?: number[];
 	manufacturer?: string;
 	modelNumber?: string;
 	serialNumber?: string;
