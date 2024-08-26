@@ -66,7 +66,7 @@ describe("GET /api/v1/devices", () => {
 			accountId: 1,
 			userId: 1,
 			deviceCategoryId: 1,
-			deviceTypeId: 1,
+			"deviceTypeId[0]": 1,
 			manufacturer: "siemens",
 			modelNumber: "x201",
 			serialNumber: "45896572",

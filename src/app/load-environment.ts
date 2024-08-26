@@ -1,12 +1,11 @@
-import {joi, ConfigLoader } from "@structured-growth/microservice-sdk";
-// import * as joi from "joi";
+import { joi, ConfigLoader } from "@structured-growth/microservice-sdk";
 
 export function loadEnvironment() {
 	const loader = new ConfigLoader();
 	loader.loadAndValidate(process.env.__PATH_TO_ENV_FILE || ".env", {
 		APP_PREFIX: joi.string().required().max(30).min(2),
 		HTTP_PORT: joi.number().positive().required(),
-		STAGE: joi.string().valid("dev", "qual", "prod").required(),
+		STAGE: joi.string().valid("dev", "qual", "test", "prod").required(),
 		REGION: joi
 			.valid(
 				"us-east-1",
@@ -42,5 +41,13 @@ export function loadEnvironment() {
 		DB_SCHEMA: joi.string().required(),
 		DB_MIGRATION_TABLE_SCHEMA: joi.string().required(),
 		DB_MIGRATION_TABLE_NAME: joi.string().required(),
+		EVENTBUS_PROVIDER: joi.string().required(),
+		EVENTBUS_NAME: joi.string().required(),
+		AUTHENTICATION_ENABLED: joi.bool().required(),
+		AUTHORIZATION_ENABLED: joi.bool().required(),
+		INTERNAL_AUTHENTICATION_ENABLED: joi.bool().required(),
+		INTERNAL_REQUESTS_ALLOWED: joi.bool().required(),
+		INTERNAL_AUTHENTICATION_JWT_SECRET: joi.string().required(),
+		OAUTH_USER_URL: joi.string().required(),
 	});
 }
