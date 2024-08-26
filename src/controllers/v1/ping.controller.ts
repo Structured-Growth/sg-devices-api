@@ -1,15 +1,10 @@
 import { Get, NoSecurity, Route, Tags, OperationId, SuccessResponse } from "tsoa";
 import { autoInjectable, BaseController, DescribeAction } from "@structured-growth/microservice-sdk";
-import { inject } from "@structured-growth/microservice-sdk";
 
 @Route("v1/ping")
 @Tags("PingController")
 @autoInjectable()
 export class PingController extends BaseController {
-	constructor(@inject("appPrefix") private appPrefix?: string) {
-		super();
-	}
-
 	/**
 	 * Check if server is alive
 	 */

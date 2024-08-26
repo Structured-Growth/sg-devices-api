@@ -1,7 +1,8 @@
 import { DefaultSearchParamsInterface } from "@structured-growth/microservice-sdk";
 import { DeviceAttributes, DeviceCategoryIdEnum, DeviceTypeIdEnum } from "../../database/models/device";
 
-export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInterface, "accountId"> {
+export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInterface, "orgId" | "accountId"> {
+	orgId?: number;
 	accountId?: number;
 	userId?: number;
 	/**
