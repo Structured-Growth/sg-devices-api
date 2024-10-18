@@ -20,6 +20,7 @@ import { DeviceCreateParamsValidator } from "../../validators/device-create-para
 import { DeviceReadParamsValidator } from "../../validators/device-read-params.validator";
 import { DeviceUpdateParamsValidator } from "../../validators/device-update-params.validator";
 import { DeviceDeleteParamsValidator } from "../../validators/device-delete-params.validator";
+import { EventMutation } from "@structured-growth/microservice-sdk";
 
 const publicDeviceAttributes = [
 	"id",
@@ -83,6 +84,10 @@ export class DevicesController extends BaseController {
 		const device = await this.devicesRepository.create(body);
 		this.response.status(201);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, device.arn, `${this.appPrefix}:devices/create`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
 			arn: device.arn,
@@ -127,6 +132,10 @@ export class DevicesController extends BaseController {
 	): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesRepository.update(deviceId, body);
 
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, device.arn, `${this.appPrefix}:devices/update`, JSON.stringify(body))
+		);
+
 		return {
 			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
 			arn: device.arn,
@@ -143,7 +152,18 @@ export class DevicesController extends BaseController {
 	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
 	@ValidateFuncArgs(DeviceDeleteParamsValidator)
 	async delete(@Path() deviceId: number): Promise<void> {
+		const device = await this.devicesRepository.read(deviceId);
+
+		if (!device) {
+			throw new NotFoundError(`Device ${deviceId} not found`);
+		}
+
 		await this.devicesRepository.delete(deviceId);
+
+		await this.eventBus.publish(
+			new EventMutation(this.principal.arn, device.arn, `${this.appPrefix}:devices/delete`, JSON.stringify({}))
+		);
+
 		this.response.status(204);
 	}
 }
