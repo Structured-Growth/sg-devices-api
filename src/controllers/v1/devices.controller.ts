@@ -58,6 +58,9 @@ export class DevicesController extends BaseController {
 	@SuccessResponse(200, "Returns list of devices")
 	@DescribeAction("devices/search")
 	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Account", ({ query }) => Number(query.accountId))
+	@DescribeResource("User", ({ query }) => Number(query.userId))
+	@DescribeResource("Device", ({ query }) => query.id?.map(Number))
 	@ValidateFuncArgs(DeviceSearchParamsValidator)
 	async search(@Queries() query: DeviceSearchParamsInterface): Promise<SearchResultInterface<PublicDeviceAttributes>> {
 		const { data, ...result } = await this.devicesRepository.search(query);
@@ -79,7 +82,9 @@ export class DevicesController extends BaseController {
 	@SuccessResponse(201, "Returns created device")
 	@DescribeAction("devices/create")
 	@ValidateFuncArgs(DeviceCreateParamsValidator)
-	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
+	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
+	@DescribeResource("Account", ({ body }) => Number(body.accountId))
+	@DescribeResource("User", ({ body }) => Number(body.userId))
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesRepository.create(body);
 		this.response.status(201);

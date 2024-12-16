@@ -23,7 +23,7 @@ export class DevicesRepository
 		params.accountId && (where["accountId"] = params.accountId);
 		params.userId && (where["userId"] = params.userId);
 		params.status && (where["status"] = params.status);
-		params.id && (where["id"] = params.id);
+		params.id && (where["id"] = { [Op.in]: params.id });
 		params.deviceCategoryId && (where["deviceCategoryId"] = params.deviceCategoryId);
 		params.deviceTypeId && (where["deviceTypeId"] = { [Op.in]: params.deviceTypeId });
 		params.manufacturer && (where["manufacturer"] = params.manufacturer);
