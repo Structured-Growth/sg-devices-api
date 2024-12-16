@@ -1,8 +1,10 @@
 import { RegionEnum } from "@structured-growth/microservice-sdk";
 import { DeviceCategoryIdEnum, DeviceTypeIdEnum } from "../../database/models/device";
+
 export interface DeviceCreateBodyInterface {
 	orgId: number;
 	region: RegionEnum;
+	accountId?: number;
 	userId?: number;
 	/**
 	 * 1 - MEDICAL DEVICES
