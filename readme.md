@@ -23,7 +23,7 @@ Follow the link to read more about its features.
 
 4. A new `.env` file will be created under the project root. Fill it with correct values.
 
-6. In case you want to use local database in a docker container run this command:
+6. In case you want  to use local database in a docker container run this command:
     ```shell
      docker-compose up -d
      ```
