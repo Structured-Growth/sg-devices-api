@@ -67,8 +67,18 @@ In order to create and push new image you have to set GitHub Actions Secrets tha
     - `REGISTRY_URI` - URI of a private Docker registry (like <aws_device_id>.dkr.ecr.<region>.amazonaws.com, without
       repository name);
     - `AWS_ACCESS_KEY_ID` - IAM access token with write permissions on ECR;
-    - `AWS_SECRET_ACCESS_KEY`
-    - `AWS_DEFAULT_REGION`
+   - `AWS_SECRET_ACCESS_KEY` – The secret access key associated with the IAM user.
+   - `AWS_DEFAULT_REGION` – The AWS region where the ECR repository is hosted.
+   - `DB_ENDPOINT` – The hostname or IP address of the database server.
+   - `DB_PORT` – The port number for connecting to the database.
+   - `DB_NAME` – The name of the database to connect to.
+   - `DB_SCHEMA` – The specific schema within the database.
+   - `DB_MASTER_USERNAME` – The username for database authentication.
+   - `DB_MASTER_PASSWORD` – The password for database authentication.
+   - `EC2_PUBLIC_IP` – The public IP address of the EC2 instance.
+   - `EC2_SSH_PRIVATE_KEY` – The private SSH key used for connecting to the EC2 instance.
+   - `NPM_AUTH_TOKEN` – The authentication token for accessing private NPM packages.
+   - `SLACK_WEBHOOK_URL` – The webhook URL for sending deployment notifications to Slack.
 3. Push to the `main` branch to run Release workflow;
 
 ### Build and test docker image locally
