@@ -4,6 +4,8 @@ import {
 	RepositoryInterface,
 	SearchResultInterface,
 	NotFoundError,
+	I18nType,
+	inject,
 } from "@structured-growth/microservice-sdk";
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
@@ -12,6 +14,10 @@ import { DeviceSearchParamsInterface } from "../../interfaces/device-search-para
 export class DevicesRepository
 	implements RepositoryInterface<Device, DeviceSearchParamsInterface, DeviceCreationAttributes>
 {
+	private i18n: I18nType;
+	constructor(@inject("i18n") private getI18n: () => I18nType) {
+		this.i18n = this.getI18n();
+	}
 	public async search(params: DeviceSearchParamsInterface): Promise<SearchResultInterface<Device>> {
 		const page = params.page || 1;
 		const limit = params.limit || 20;
@@ -65,7 +71,7 @@ export class DevicesRepository
 	public async update(id: number, params: DeviceUpdateAttributes): Promise<Device> {
 		const device = await this.read(id);
 		if (!device) {
-			throw new NotFoundError(`Device ${id} not found`);
+			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 		device.setAttributes(params);
 
@@ -76,7 +82,7 @@ export class DevicesRepository
 		const n = await Device.destroy({ where: { id } });
 
 		if (n === 0) {
-			throw new NotFoundError(`Device ${id} not found`);
+			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 	}
 }
