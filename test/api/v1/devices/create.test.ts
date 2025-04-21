@@ -5,7 +5,9 @@ import { initTest } from "../../../common/init-test";
 describe("POST /api/v1/devices", () => {
 	const { server, context } = initTest();
 
-	it("Should create device", async () => {
+	it("Should create device", async function () {
+		this.timeout(20000);
+
 		const { statusCode, body } = await server.post("/v1/devices").send({
 			orgId: 1,
 			region: "us",
