@@ -2,12 +2,11 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
-describe("POST /api/v1/devices", () => {
+describe("POST /api/v1/devices", function () {
+	this.timeout(7000);
 	const { server, context } = initTest();
 
-	it("Should create device", async function () {
-		this.timeout(20000);
-
+	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
 			orgId: 1,
 			region: "us",
