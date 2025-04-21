@@ -1,0 +1,38 @@
+{
+  "system": {
+    "ping":  {
+      "am": "I'm",
+      "service": "service"
+    }
+  },
+  "error": {
+    "common": {
+      "not_found": "not found"
+    },
+    "device": {
+      "name": "Device"
+    }
+  },
+  "validator": {
+    "common": {
+      "id": "Entity IDs",
+      "arn": "Entity ARNs",
+      "page": "Page",
+      "limit": "Limit",
+      "sort": "Sort"
+    },
+    "devices": {
+      "orgId": "Organization Id",
+      "accountId": "Account Id",
+      "userId": "User Id",
+      "deviceCategoryId": "Device category Id",
+      "deviceTypeId": "Device type Id",
+      "manufacturer": "Manufacturer",
+      "modelNumber": "Model number",
+      "serialNumber": "Serial number",
+      "imei": "IMEI",
+      "region": "Region",
+      "deviceId": "Device Id"
+    }
+  }
+}
