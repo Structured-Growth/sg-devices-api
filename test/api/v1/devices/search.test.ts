@@ -2,8 +2,7 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
-describe("GET /api/v1/devices", function () {
-	this.timeout(20000);
+describe("GET /api/v1/devices", () => {
 	const { server, context } = initTest();
 
 	it("Should create device", async () => {
