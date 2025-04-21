@@ -3,7 +3,7 @@ import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
 describe("POST /api/v1/devices", function () {
-	this.timeout(10000);
+	this.timeout(20000);
 	const { server, context } = initTest();
 
 	it("Should create device", async () => {

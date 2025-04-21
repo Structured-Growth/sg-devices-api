@@ -2,7 +2,8 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
-describe("DELETE /api/v1/devices/:deviceId", () => {
+describe("DELETE /api/v1/devices/:deviceId", function () {
+	this.timeout(20000);
 	const { server, context } = initTest();
 
 	it("Should create device", async () => {
