@@ -54,7 +54,7 @@ export function loadEnvironment() {
 		DEFAULT_AVAILABLE_LANGUAGES: joi.string().required(),
 		DEFAULT_TRANSLATION_CACHE_EXPIRATION: joi.number().required(),
 		DEFAULT_TRANSLATE_DIRECTORY_PATH: joi.string().required(),
-		TRANSLATE_API_URL: joi.string().required(),
+		TRANSLATE_API_URL: joi.string().allow(""),
 		TRANSLATE_API_CLIENT_ID: joi.number().required(),
 	});
 }
