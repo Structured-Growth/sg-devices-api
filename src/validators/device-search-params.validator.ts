@@ -4,15 +4,15 @@ import { CommonSearchParamsValidator } from "./common-search-params.validator";
 export const DeviceSearchParamsValidator = joi.object({
 	query: joi
 		.object({
-			orgId: joi.number().positive().label("Organization Id"),
-			accountId: joi.number().positive().label("Account Id"),
-			userId: joi.number().positive().label("User Id"),
-			deviceCategoryId: joi.number().positive().label("Device category Id"),
-			deviceTypeId: joi.array().items(joi.number().positive()).label("Device type Id"),
-			manufacturer: joi.string().max(50).label("Manufacturer"),
-			modelNumber: joi.string().max(50).label("Model number"),
-			serialNumber: joi.string().max(100).label("Serial number"),
-			imei: joi.string().max(50).label("IMEI"),
+			orgId: joi.number().positive().label("validator.devices.orgId"),
+			accountId: joi.number().positive().label("validator.devices.accountId"),
+			userId: joi.number().positive().label("validator.devices.userId"),
+			deviceCategoryId: joi.number().positive().label("validator.devices.deviceCategoryId"),
+			deviceTypeId: joi.array().items(joi.number().positive()).label("validator.devices.deviceTypeId"),
+			manufacturer: joi.string().max(50).label("validator.devices.manufacturer"),
+			modelNumber: joi.string().max(50).label("validator.devices.modelNumber"),
+			serialNumber: joi.string().max(100).label("validator.devices.orgId"),
+			imei: joi.string().max(50).label("validator.devices.serialNumber"),
 			status: joi.string().valid("active", "inactive", "archived"),
 		})
 		.concat(CommonSearchParamsValidator),

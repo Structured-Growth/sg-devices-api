@@ -8,6 +8,7 @@ import {
 	NotFoundError,
 	SearchResultInterface,
 	ValidateFuncArgs,
+	I18nType,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DeviceAttributes } from "../../../database/models/device";
@@ -46,8 +47,13 @@ type PublicDeviceAttributes = Pick<DeviceAttributes, DeviceKeys>;
 @Tags("Devices")
 @autoInjectable()
 export class DevicesController extends BaseController {
-	constructor(@inject("DevicesRepository") private devicesRepository: DevicesRepository) {
+	private i18n: I18nType;
+	constructor(
+		@inject("DevicesRepository") private devicesRepository: DevicesRepository,
+		@inject("i18n") private getI18n: () => I18nType
+	) {
 		super();
+		this.i18n = this.getI18n();
 	}
 
 	/**
@@ -112,7 +118,9 @@ export class DevicesController extends BaseController {
 		const device = await this.devicesRepository.read(deviceId);
 
 		if (!device) {
-			throw new NotFoundError(`Device ${device} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.device.name")} ${device} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		return {
@@ -160,7 +168,9 @@ export class DevicesController extends BaseController {
 		const device = await this.devicesRepository.read(deviceId);
 
 		if (!device) {
-			throw new NotFoundError(`Device ${deviceId} not found`);
+			throw new NotFoundError(
+				`${this.i18n.__("error.device.name")} ${deviceId} ${this.i18n.__("error.common.not_found")}`
+			);
 		}
 
 		await this.devicesRepository.delete(deviceId);
