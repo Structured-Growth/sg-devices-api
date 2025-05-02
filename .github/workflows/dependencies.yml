@@ -32,7 +32,10 @@ jobs:
           const { execSync } = require('child_process');
 
           function flattenDeps(tree, level = 0, list = [], seen = new Set()) {
-            if (!tree || !tree.dependencies) return list;
+            if (!tree || !tree.dependencies) {
+              console.log('ℹ️ No dependencies at level', level);
+              return list;
+            }
             for (const [name, info] of Object.entries(tree.dependencies)) {
               if (seen.has(info)) continue;
               seen.add(info);
@@ -53,16 +56,21 @@ jobs:
           let auditMap = {};
 
           try {
+            console.log('🔍 Running npm ls...');
             const lsRaw = execSync('npm ls --all --json', { encoding: 'utf8' });
             const lsJson = JSON.parse(lsRaw);
             deps = flattenDeps(lsJson);
+            console.log(\`📋 Total dependencies collected: \${deps.length}\`);
           } catch (err) {
             console.error('Failed to parse npm ls:', err.message);
           }
 
           try {
+            console.log('🔐 Running npm audit...');
             const auditRaw = execSync('npm audit --json', { encoding: 'utf8' });
             const auditJson = JSON.parse(auditRaw);
+            const vulnerabilities = auditJson.vulnerabilities || {};
+            console.log(\`⚠️ Packages with vulnerabilities: \${Object.keys(vulnerabilities).length}\`);
             for (const [pkg, vuln] of Object.entries(auditJson.vulnerabilities || {})) {
               const severities = {};
               vuln.via.forEach(v => {
