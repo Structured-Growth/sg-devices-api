@@ -1,0 +1,136 @@
+name: Generate list of software dependencies and security
+
+on:
+  workflow_call:
+    secrets:
+      NPM_AUTH_TOKEN:
+        required: true
+
+jobs:
+  generate-dependencies:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          echo "📦 Installing dependencies..."
+          npm cache clean --force
+          GITHUB_TOKEN=${{ secrets.NPM_AUTH_TOKEN }} npm install
+
+      - name: Generate dependencies HTML report with vulnerabilities
+        run: |
+          echo "📂 Creating reports directory..."
+          mkdir -p reports
+          
+          echo "📄 Generating HTML report..."
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const { execSync } = require('child_process');
+
+          function flattenDeps(tree, level = 0, list = [], seen = new Set()) {
+            if (!tree || !tree.dependencies) return list;
+            for (const [name, info] of Object.entries(tree.dependencies)) {
+              if (seen.has(info)) continue;
+              seen.add(info);
+
+              const indent = '&nbsp;'.repeat(level * 4) + (level > 0 ? '└── ' : '');
+              list.push({
+                name: indent + name,
+                rawName: name,
+                version: info.version || 'N/A'
+              });
+
+              flattenDeps(info, level + 1, list, seen);
+            }
+            return list;
+          }
+
+          let deps = [];
+          let auditMap = {};
+
+          try {
+            const lsRaw = execSync('npm ls --all --json', { encoding: 'utf8' });
+            const lsJson = JSON.parse(lsRaw);
+            deps = flattenDeps(lsJson);
+          } catch (err) {
+            console.error('Failed to parse npm ls:', err.message);
+          }
+
+          try {
+            const auditRaw = execSync('npm audit --json', { encoding: 'utf8' });
+            const auditJson = JSON.parse(auditRaw);
+            for (const [pkg, vuln] of Object.entries(auditJson.vulnerabilities || {})) {
+              const severities = {};
+              vuln.via.forEach(v => {
+                if (typeof v === 'string') return;
+                severities[v.severity] = (severities[v.severity] || 0) + 1;
+              });
+              const summary = Object.entries(severities).map(([s, c]) => \`\${s}: \${c}\`).join(', ');
+              auditMap[pkg] = summary || '-';
+            }
+          } catch (err) {
+            console.warn('npm audit failed:', err.message);
+          }
+
+          const dateStr = new Date().toLocaleString();
+          let html = \`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset='UTF-8'>
+            <title>Dependencies Report</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f4f4f4; }
+              .header { font-weight: bold; margin-bottom: 10px; }
+            </style>
+          </head>
+          <body>
+            <div class='header'><strong>Generated at:</strong> \${dateStr}</div>
+            <table>
+              <tr><td><strong>Total dependencies</strong></td><td>\${deps.length}</td></tr>
+              <tr><td><strong>Total vulnerabilities</strong></td><td>\${Object.keys(auditMap).length}</td></tr>
+            </table>
+
+            <h2>Dependencies</h2>
+            <table>
+              <tr><th>#</th><th>Dependency</th><th>Version</th><th>Vulnerabilities</th></tr>
+          \`;
+
+          deps.forEach((dep, i) => {
+            html += \`<tr>
+              <td>\${i + 1}</td>
+              <td>\${dep.name}</td>
+              <td>\${dep.version}</td>
+              <td>\${auditMap[dep.rawName] || '-'}</td>
+            </tr>\`;
+          });
+
+          html += '</table></body></html>';
+          fs.writeFileSync(path.join('reports', 'report.html'), html);
+          console.log('✅ Report created at reports/report.html');
+          "
+
+      - name: Convert HTML to PDF
+        id: generate_pdf
+        uses: fifsky/html-to-pdf-action@master
+        with:
+          htmlFile: reports/report.html
+          outputFile: reports/dependencies-report.pdf
+          pdfOptions: '{"format": "A4", "margin": {"top": "10mm", "left": "10mm", "right": "10mm", "bottom": "10mm"}}'
+        continue-on-error: false
+
+      - name: Debug PDF Report
+        run: ls -lh reports/
+
+      - name: Upload PDF as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencies-pdf-report
+          path: reports/dependencies-report.pdf
