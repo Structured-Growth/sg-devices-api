@@ -33,7 +33,6 @@ jobs:
 
           function flattenDeps(tree, level = 0, list = [], seen = new Set()) {
             if (!tree || !tree.dependencies) {
-              console.log('ℹ️ No dependencies at level', level);
               return list;
             }
             for (const [name, info] of Object.entries(tree.dependencies)) {
@@ -67,7 +66,7 @@ jobs:
 
           try {
             console.log('🔐 Running npm audit...');
-            const auditRaw = execSync('npm audit --json', { encoding: 'utf8' });
+            const auditRaw = execSync('npm audit --json || true', { encoding: 'utf8' });
             const auditJson = JSON.parse(auditRaw);
             const vulnerabilities = auditJson.vulnerabilities || {};
             console.log(\`⚠️ Packages with vulnerabilities: \${Object.keys(vulnerabilities).length}\`);
