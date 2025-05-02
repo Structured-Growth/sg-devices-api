@@ -39,7 +39,7 @@ jobs:
               if (seen.has(info)) continue;
               seen.add(info);
 
-              const indent = '&nbsp;'.repeat(level * 4) + (level > 0 ? '└── ' : '');
+              const indent = ' '.repeat(level * 2);
               list.push({
                 name: indent + name,
                 rawName: name,
@@ -111,12 +111,12 @@ jobs:
           \`;
 
           deps.forEach((dep, i) => {
-            html += \`<tr>
-              <td>\${i + 1}</td>
-              <td>\${dep.name}</td>
-              <td>\${dep.version}</td>
-              <td>\${auditMap[dep.rawName] || '-'}</td>
-            </tr>\`;
+            html += `<tr>
+              <td>${i + 1}</td>
+              <td style="white-space: pre;">${dep.name}</td>
+              <td>${dep.version}</td>
+              <td>${auditMap[dep.rawName] || '-'}</td>
+            </tr>`;
           });
 
           html += '</table></body></html>';
