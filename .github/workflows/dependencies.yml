@@ -65,7 +65,7 @@ jobs:
           }
 
           try {
-            console.log('🔐 Running npm audit...');
+            console.log('🔐 Running npm audit....');
             const auditRaw = execSync('npm audit --json || true', { encoding: 'utf8' });
             const auditJson = JSON.parse(auditRaw);
             const vulnerabilities = auditJson.vulnerabilities || {};
