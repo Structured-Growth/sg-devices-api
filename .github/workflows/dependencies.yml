@@ -129,7 +129,7 @@ jobs:
           deps.forEach((dep, i) => {
             html += `<tr>
               <td>${i + 1}</td>
-              <td class="dependency" style="white-space: pre;">${dep.name}</td>
+              <td class="dependency">${dep.name}</td>
               <td>${dep.version}</td>
               <td>${auditMap[dep.rawName] || "-"}</td>
             </tr>`;
