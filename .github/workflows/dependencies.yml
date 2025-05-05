@@ -78,29 +78,38 @@ jobs:
             console.log(`⚠️ Packages with vulnerabilities: ${Object.keys(vulnerabilities).length}`);
           
             for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
+              const levels = new Set();
+            
+              vuln.via.forEach(v => {
+                if (typeof v === "object" && v.severity) {
+                  levels.add(v.severity);
+                }
+              });
+            
+              levels.forEach(level => {
+                if (severityCounts[level] !== undefined) {
+                  severityCounts[level]++;
+                  totalVulns++;
+                }
+              });
+            
               const severities = {};
               vuln.via.forEach(v => {
                 if (typeof v === "string") return;
-              
                 severities[v.severity] = (severities[v.severity] || 0) + 1;
-              
-                if (severityCounts[v.severity] !== undefined) {
-                severityCounts[v.severity]++;
-                totalVulns++;
-                }
               });
-              
+            
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
               const descriptions = vuln.via
                 .filter(v => typeof v === "object" && v.title)
                 .map(v => {
-                let line = `- ${v.title}`;
-                if (v.url) {
-                  line += ` <a href="${v.url}" target="_blank">Details</a>`;
-                }
+                  let line = `- ${v.title}`;
+                  if (v.url) {
+                    line += ` <a href="${v.url}" target="_blank">Details</a>`;
+                  }
                 return line;
               })
-                .join("<br>");
+              .join("<br>");
               
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
             }
@@ -135,7 +144,7 @@ jobs:
             <div class="header"><strong>Generated at:</strong> ${dateStr}</div>
             <table>
               <tr><td><strong>Total dependencies</strong></td><td>${deps.length}</td></tr>
-              <tr><td><strong>Total vulnerable packages</strong></td><td>${totalVulns}</td></tr>
+              <tr><td><strong>Total vulnerable packages</strong></td><td>${Object.keys(auditMap).length}</td></tr>
             </table>
           
             <h4>Vulnerability Breakdown</h4>
