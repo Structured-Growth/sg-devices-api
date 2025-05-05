@@ -61,7 +61,7 @@ jobs:
             deps = flattenDeps(lsJson);
             console.log(\`📋 Total dependencies collected: \${deps.length}\`);
           } catch (err) {
-            console.error('Failed to parse npm ls:', err.message);
+            console.log('Failed to parse npm ls:', err.message);
           }
 
           try {
@@ -76,11 +76,16 @@ jobs:
                 if (typeof v === 'string') return;
                 severities[v.severity] = (severities[v.severity] || 0) + 1;
               });
-              const summary = Object.entries(severities).map(([s, c]) => \`\${s}: \${c}\`).join(', ');
-              auditMap[pkg] = summary || '-';
+              const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(', ');
+              const descriptions = vuln.via
+              .filter(v => typeof v === 'object' && v.title)
+              .map(v => `- ${v.title}`)
+              .join('<br>');
+            
+              auditMap[pkg] = summary + (descriptions ? '<br>' + descriptions : '');
             }
           } catch (err) {
-            console.warn('npm audit failed:', err.message);
+            console.log('npm audit failed:', err.message);
           }
 
           const dateStr = new Date().toLocaleString();
@@ -94,6 +99,7 @@ jobs:
               body { font-family: Arial, sans-serif; margin: 20px; }
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              td.dependency { width: 30%; }
               th { background-color: #f4f4f4; }
               .header { font-weight: bold; margin-bottom: 10px; }
             </style>
@@ -113,7 +119,7 @@ jobs:
           deps.forEach((dep, i) => {
             html += \`<tr>
               <td>\${i + 1}</td>
-              <td style='white-space: pre;'>\${dep.name}</td>
+              <td class='dependency' style='white-space: pre;'>\${dep.name}</td>
               <td>\${dep.version}</td>
               <td>\${auditMap[dep.rawName] || '-'}</td>
             </tr>\`;
