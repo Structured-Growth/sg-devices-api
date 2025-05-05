@@ -141,12 +141,12 @@ jobs:
             <div class="header"><strong>Generated at:</strong> ${dateStr}</div>
             <table>
               <tr><td><strong>Total dependencies</strong></td><td>${deps.length}</td></tr>
-              <tr><td><strong>Total vulnerable packages</strong></td><td>${Object.keys(auditMap).length}</td></tr>
-              <tr><td><strong>INFO</strong></td><td>${severityCounts.info}</td></tr>
-              <tr><td><strong>LOW</strong></td><td>${severityCounts.low}</td></tr>
-              <tr><td><strong>MODERATE</strong></td><td>${severityCounts.moderate}</td></tr>
-              <tr><td><strong>HIGH</strong></td><td>${severityCounts.high}</td></tr>
-              <tr><td><strong>CRITICAL</strong></td><td>${severityCounts.critical}</td></tr>
+              <tr><td><strong>Total dependabot vulnerabilities</strong></td><td>${Object.keys(auditMap).length}</td></tr>
+              <tr><td><strong>Informational</strong></td><td>${severityCounts.info}</td></tr>
+              <tr><td><strong>Low severity</strong></td><td>${severityCounts.low}</td></tr>
+              <tr><td><strong>Moderate severity</strong></td><td>${severityCounts.moderate}</td></tr>
+              <tr><td><strong>High severity</strong></td><td>${severityCounts.high}</td></tr>
+              <tr><td><strong>Critical severity</strong></td><td>${severityCounts.critical}</td></tr>
             </table>
 
             <h2>Dependencies</h2>
