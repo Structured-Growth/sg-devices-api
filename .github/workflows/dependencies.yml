@@ -151,7 +151,7 @@ jobs:
 
             <h2>Dependencies</h2>
             <table>
-              <tr><th>#</th><th>Dependency</th><th>Version</th><th>Vulnerabilities</th></tr>
+              <tr><th>#</th><th>Dependency</th><th>Version</th><th>Dependabot vulnerabilities</th></tr>
           `;
 
           deps.forEach((dep, i) => {
