@@ -79,8 +79,14 @@ jobs:
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
               const descriptions = vuln.via
                 .filter(v => typeof v === "object" && v.title)
-                .map(v => `- ${v.title}`)
-                .join("<br>");
+                .map(v => {
+                let line = `- ${v.title}`;
+                if (v.url) {
+                  line += ` <a href="${v.url}" target="_blank">Details</a>`;
+                }
+                return line;
+              })
+              .join("<br>");
 
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
             }
@@ -100,7 +106,11 @@ jobs:
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
               th { background-color: #f4f4f4; }
-              td.dependency { width: 30%; }
+              td.dependency {
+                width: 20%;
+                white-space: normal;
+                word-break: break-word;
+              }
               .header { font-weight: bold; margin-bottom: 10px; }
             </style>
           </head>
