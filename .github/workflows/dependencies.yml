@@ -51,6 +51,14 @@ jobs:
 
           let deps = [];
           let auditMap = {};
+          let severityCounts = {
+            info: 0,
+            low: 0,
+            moderate: 0,
+            high: 0,
+            critical: 0
+          };
+          let totalVulns = 0;
 
           try {
             console.log("🔍 Running npm ls...");
@@ -68,14 +76,20 @@ jobs:
             const auditJson = JSON.parse(auditRaw);
             const vulnerabilities = auditJson.vulnerabilities || {};
             console.log(`⚠️ Packages with vulnerabilities: ${Object.keys(vulnerabilities).length}`);
-
+          
             for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
               const severities = {};
               vuln.via.forEach(v => {
                 if (typeof v === "string") return;
+              
                 severities[v.severity] = (severities[v.severity] || 0) + 1;
+              
+                if (severityCounts[v.severity] !== undefined) {
+                severityCounts[v.severity]++;
+                totalVulns++;
+                }
               });
-
+              
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
               const descriptions = vuln.via
                 .filter(v => typeof v === "object" && v.title)
@@ -86,27 +100,9 @@ jobs:
                 }
                 return line;
               })
-              .join("<br>");
-
+                .join("<br>");
+              
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
-          
-              const severityCounts = {
-                info: 0,
-                low: 0,
-                moderate: 0,
-                high: 0,
-                critical: 0
-              };
-                
-              for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
-                vuln.via.forEach(v => {
-                  if (typeof v === "object" && severityCounts[v.severity] !== undefined) {
-                  severityCounts[v.severity]++;
-                  }
-                });
-              }
-                
-              const totalVulns = Object.values(severityCounts).reduce((a, b) => a + b, 0);
             }
           } catch (err) {
             console.warn("npm audit failed:", err.message);
