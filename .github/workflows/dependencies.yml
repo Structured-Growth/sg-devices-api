@@ -142,16 +142,12 @@ jobs:
             <table>
               <tr><td><strong>Total dependencies</strong></td><td>${deps.length}</td></tr>
               <tr><td><strong>Total vulnerable packages</strong></td><td>${Object.keys(auditMap).length}</td></tr>
+              <tr><td><strong>INFO</strong></td><td>${severityCounts.info}</td></tr>
+              <tr><td><strong>LOW</strong></td><td>${severityCounts.low}</td></tr>
+              <tr><td><strong>MODERATE</strong></td><td>${severityCounts.moderate}</td></tr>
+              <tr><td><strong>HIGH</strong></td><td>${severityCounts.high}</td></tr>
+              <tr><td><strong>CRITICAL</strong></td><td>${severityCounts.critical}</td></tr>
             </table>
-          
-            <h4>Vulnerability Breakdown</h4>
-            <ul>
-              <li><strong>INFO:</strong> ${severityCounts.info}</li>
-              <li><strong>LOW:</strong> ${severityCounts.low}</li>
-              <li><strong>MODERATE:</strong> ${severityCounts.moderate}</li>
-              <li><strong>HIGH:</strong> ${severityCounts.high}</li>
-              <li><strong>CRITICAL:</strong> ${severityCounts.critical}</li>
-            </ul>
 
             <h2>Dependencies</h2>
             <table>
@@ -163,7 +159,7 @@ jobs:
               <td>${i + 1}</td>
               <td class="dependency">${dep.name}</td>
               <td>${dep.version}</td>
-              <td class="vulnerabilities">${auditMap[dep.rawName] || "-"}</td>
+              <td class="vulnerabilities">${auditMap[dep.rawName] || "none"}</td>
             </tr>`;
           });
 
