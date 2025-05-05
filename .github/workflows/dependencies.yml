@@ -107,9 +107,12 @@ jobs:
               th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
               th { background-color: #f4f4f4; }
               td.dependency {
-                width: 20%;
-                white-space: normal;
+                width: 30%;
+                white-space: pre-wrap;
                 word-break: break-word;
+              }
+              td.vulnerabilities {
+                width: 30%;
               }
               .header { font-weight: bold; margin-bottom: 10px; }
             </style>
@@ -131,7 +134,7 @@ jobs:
               <td>${i + 1}</td>
               <td class="dependency">${dep.name}</td>
               <td>${dep.version}</td>
-              <td>${auditMap[dep.rawName] || "-"}</td>
+              <td class="vulnerabilities">${auditMap[dep.rawName] || "-"}</td>
             </tr>`;
           });
 
