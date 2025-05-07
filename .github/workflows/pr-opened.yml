@@ -56,4 +56,5 @@ jobs:
     uses: ./.github/workflows/dependencies.yml
     secrets:
       NPM_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      REPORT_TITLE: Devices API dependencies report
     if: success()

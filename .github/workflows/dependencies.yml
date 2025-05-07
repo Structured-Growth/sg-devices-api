@@ -5,6 +5,8 @@ on:
     secrets:
       NPM_AUTH_TOKEN:
         required: true
+      REPORT_TITLE:
+        required: true
 
 jobs:
   generate-dependencies:
@@ -21,6 +23,8 @@ jobs:
           GITHUB_TOKEN=${{ secrets.NPM_AUTH_TOKEN }} npm install
 
       - name: Generate dependencies HTML report with vulnerabilities
+        env:
+          REPORT_TITLE: ${{ secrets.REPORT_TITLE }}
         run: |
           echo "📂 Creating reports directory..."
           mkdir -p reports
@@ -134,20 +138,33 @@ jobs:
               td.vulnerabilities {
                 width: 50%;
               }
-              .header { font-weight: bold; margin-bottom: 10px; }
+              .header { margin-bottom: 10px; }
             </style>
           </head>
           <body>
+            <h1>${process.env.REPORT_TITLE || "Dependencies Report"}</h1>
             <div class="header"><strong>Generated at:</strong> ${dateStr}</div>
             <table>
               <tr><td><strong>Total dependencies</strong></td><td>${deps.length}</td></tr>
               <tr><td><strong>Total dependabot vulnerabilities</strong></td><td>${Object.keys(auditMap).length}</td></tr>
-              <tr><td><strong>Informational</strong></td><td>${severityCounts.info}</td></tr>
-              <tr><td><strong>Low severity</strong></td><td>${severityCounts.low}</td></tr>
-              <tr><td><strong>Moderate severity</strong></td><td>${severityCounts.moderate}</td></tr>
-              <tr><td><strong>High severity</strong></td><td>${severityCounts.high}</td></tr>
-              <tr><td><strong>Critical severity</strong></td><td>${severityCounts.critical}</td></tr>
+              <tr><td>Critical dependabot vulnerabilities</td><td>${severityCounts.critical}</td></tr>
+              <tr><td>High dependabot vulnerabilities</td><td>${severityCounts.high}</td></tr>
+              <tr><td>Moderate dependabot vulnerabilities</td><td>${severityCounts.moderate}</td></tr>
+              <tr><td>Low dependabot vulnerabilities</td><td>${severityCounts.low}</td></tr>
+              <tr><td>Informational dependabot vulnerabilities</td><td>${severityCounts.info}</td></tr>
             </table>
+          
+            ["critical", "high", "moderate", "low", "info"].forEach(level => {
+              const entries = vulnDetails[level];
+              if (entries.length) {
+                html += `<h3>${level.charAt(0).toUpperCase() + level.slice(1)} dependabot vulnerabilities</h3>`;
+                html += `<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
+                entries.forEach((entry, i) => {
+                html += `<tr><td>${i + 1}</td><td>${entry.name}</td><td>${entry.version}</td><td>${entry.report}</td></tr>`;
+              });
+                html += `</table>`;
+              }
+            });
 
             <h2>Dependencies</h2>
             <table>
