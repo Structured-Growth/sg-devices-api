@@ -176,9 +176,19 @@ jobs:
             if (entries.length) {
               html += `<h3>${level.charAt(0).toUpperCase() + level.slice(1)} dependabot vulnerabilities</h3>`;
               html += `<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
+          
+              html += `<table>
+                <colgroup>
+                <col style="width: 5%">
+                <col style="width: 25%">
+                <col style="width: 20%">
+                <col style="width: 50%">
+                </colgroup>
+                <tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
+  
               entries.forEach((entry, i) => {
-              html += `<tr><td>${i + 1}</td><td>${entry.name}</td><td>${entry.version}</td><td>${entry.report}</td></tr>`;
-            });
+                html += `<tr><td>${i + 1}</td><td>${entry.name}</td><td>${entry.version}</td><td>${entry.report}</td></tr>`;
+              });
               html += `</table>`;
             }
           });
