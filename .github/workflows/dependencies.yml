@@ -175,7 +175,6 @@ jobs:
             const entries = vulnDetails[level];
             if (entries.length) {
               html += `<h3>${level.charAt(0).toUpperCase() + level.slice(1)} dependabot vulnerabilities</h3>`;
-              html += `<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
           
               html += `<table>
                 <colgroup>
