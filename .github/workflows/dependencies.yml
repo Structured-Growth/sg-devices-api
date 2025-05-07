@@ -171,6 +171,9 @@ jobs:
             </table>
           `;
           
+          console.log("Severity Counts: ", severityCounts);
+          console.log("Vuln Details: ", vulnDetails);
+          
           ["critical", "high", "moderate", "low", "info"].forEach(level => {
             const entries = vulnDetails[level];
             if (entries.length) {
@@ -193,7 +196,14 @@ jobs:
           });
           
           html += "<h2>Dependencies</h2>";
-          html += "<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Dependabot vulnerabilities</th></tr>";
+          html += `<table>
+                <colgroup>
+                <col style="width: 5%">
+                <col style="width: 25%">
+                <col style="width: 20%">
+                <col style="width: 50%">
+                </colgroup>
+                <tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
 
           deps.forEach((dep, i) => {
             html += `<tr>
