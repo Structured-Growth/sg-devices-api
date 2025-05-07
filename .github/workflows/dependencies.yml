@@ -79,6 +79,13 @@ jobs:
             const auditRaw = execSync("npm audit --json || true", { encoding: "utf8" });
             const auditJson = JSON.parse(auditRaw);
             const vulnerabilities = auditJson.vulnerabilities || {};
+            const vulnDetails = {
+              critical: [],
+              high: [],
+              moderate: [],
+              low: [],
+              info: []
+            };
             console.log(`⚠️ Packages with vulnerabilities: ${Object.keys(vulnerabilities).length}`);
           
             const counts = auditJson.metadata?.vulnerabilities || {};
@@ -100,6 +107,7 @@ jobs:
                 severities[v.severity] = (severities[v.severity] || 0) + 1;
               });
             
+              const severity = Object.keys(severities)[0] || "info";
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
               const descriptions = vuln.via
                 .filter(v => typeof v === "object" && v.title)
@@ -111,6 +119,12 @@ jobs:
                   return line;
                 })
                 .join("<br>");
+          
+              vulnDetails[severity].push({
+                  name: pkg,
+                  version: vuln.version || "N/A",
+                  report: descriptions || "No details available"
+              });
             
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
             }
