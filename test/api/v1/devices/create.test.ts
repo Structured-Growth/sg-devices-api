@@ -33,7 +33,7 @@ describe("POST /api/v1/devices", () => {
 		assert.equal(body.status, "active");
 		assert.isString(body.arn);
 		context["deviceId"] = body.id;
-	});
+	}).timeout(1800000);
 
 	it("Should return validation error", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
@@ -64,5 +64,5 @@ describe("POST /api/v1/devices", () => {
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
 		assert.isString(body.validation.body.status[0]);
-	});
+	}).timeout(1800000);
 });

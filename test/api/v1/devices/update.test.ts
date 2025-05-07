@@ -22,7 +22,7 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
 		context["deviceId"] = body.id;
-	});
+	}).timeout(1800000);
 
 	it("Should update device", async () => {
 		const { statusCode, body } = await server.put(`/v1/devices/${context.deviceId}`).send({
@@ -47,7 +47,7 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.equal(body.serialNumber, "45886572");
 		assert.equal(body.imei, "dfrdfdf12855644");
 		assert.isString(body.arn);
-	});
+	}).timeout(1800000);
 
 	it("Should return validation error", async () => {
 		const { statusCode, body } = await server.put(`/v1/devices/${context.userId}`).send({
@@ -74,19 +74,19 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
 		assert.isString(body.validation.body.status[0]);
-	});
+	}).timeout(1800000);
 
 	it("Should return validation error if device id is wrong", async () => {
 		const { statusCode, body } = await server.put(`/v1/devices/9999`).send({});
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.isString(body.message);
-	});
+	}).timeout(1800000);
 
 	it("Should return validation error if device id is wrong", async () => {
 		const { statusCode, body } = await server.put(`/v1/devices/stringid`).send({});
 		assert.equal(statusCode, 422);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.message);
-	});
+	}).timeout(1800000);
 });

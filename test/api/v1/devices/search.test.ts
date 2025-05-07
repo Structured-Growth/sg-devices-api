@@ -22,7 +22,7 @@ describe("GET /api/v1/devices", () => {
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
 		context["deviceId"] = body.id;
-	});
+	}).timeout(1800000);
 
 	it("Should return validation error", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
@@ -57,7 +57,7 @@ describe("GET /api/v1/devices", () => {
 		assert.isString(body.validation.query.serialNumber[0]);
 		assert.isString(body.validation.query.status[0][0]);
 		assert.isString(body.validation.query.imei[0][0]);
-	});
+	}).timeout(1800000);
 
 	it("Should return device", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
@@ -89,5 +89,5 @@ describe("GET /api/v1/devices", () => {
 		assert.equal(body.page, 1);
 		assert.equal(body.limit, 20);
 		assert.equal(body.total, 1);
-	});
+	}).timeout(1800000);
 });

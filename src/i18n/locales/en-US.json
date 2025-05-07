@@ -10,7 +10,8 @@
       "not_found": "not found"
     },
     "device": {
-      "name": "Device"
+      "name": "Device",
+      "exist": "Device with given ID already exists"
     }
   },
   "validator": {
@@ -32,7 +33,8 @@
       "serialNumber": "Serial number",
       "imei": "IMEI",
       "region": "Region",
-      "deviceId": "Device Id"
+      "deviceId": "Device Id",
+      "devices": "Devices"
     }
   }
 }
