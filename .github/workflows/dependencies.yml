@@ -41,7 +41,7 @@ jobs:
               if (seen.has(info)) continue;
               seen.add(info);
 
-              const indent = " ".repeat(level * 2);
+              const indent = '&nbsp;'.repeat(level * 4) + (level > 0 ? '└── ' : '');
               list.push({
                 name: indent + name,
                 rawName: name,
@@ -158,6 +158,7 @@ jobs:
             <title>Dependencies Report</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 20px; }
+              h2, h3 { margin-top: 20px; }
               table { width: 100%; border-collapse: collapse; margin-top: 20px; }
               th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
               th { background-color: #f4f4f4; }
