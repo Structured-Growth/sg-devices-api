@@ -106,7 +106,6 @@ jobs:
                 severities[vuln.severity] = (severities[vuln.severity] || 0) + 1;
               }
             
-              const severity = Object.keys(severities)[0] || vuln.severity;
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
           
               const descriptions = vuln.via
@@ -120,11 +119,13 @@ jobs:
                 })
                 .join("<br>");
           
-              vulnDetails[severity].push({
+              for (const level of Object.keys(severities)) {
+                vulnDetails[level].push({
                   name: pkg,
-                  version: vuln.version || "N/A",
+                  version: vuln.range || "N/A",
                   report: descriptions || "No details available"
-              });
+                });
+              }
             
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
             }
