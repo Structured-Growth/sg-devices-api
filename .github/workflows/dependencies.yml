@@ -63,6 +63,13 @@ jobs:
             critical: 0
           };
           let totalVulns = 0;
+          const vulnDetails = {
+            critical: [],
+            high: [],
+            moderate: [],
+            low: [],
+            info: []
+          };
 
           try {
             console.log("🔍 Running npm ls...");
@@ -79,13 +86,6 @@ jobs:
             const auditRaw = execSync("npm audit --json || true", { encoding: "utf8" });
             const auditJson = JSON.parse(auditRaw);
             const vulnerabilities = auditJson.vulnerabilities || {};
-            const vulnDetails = {
-              critical: [],
-              high: [],
-              moderate: [],
-              low: [],
-              info: []
-            };
             console.log(`⚠️ Packages with vulnerabilities: ${Object.keys(vulnerabilities).length}`);
           
             const counts = auditJson.metadata?.vulnerabilities || {};
