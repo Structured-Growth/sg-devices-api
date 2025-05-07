@@ -161,7 +161,8 @@ jobs:
             <div class="header"><strong>Generated at:</strong> ${dateStr}</div>
             <table>
               <tr><td><strong>Total dependencies</strong></td><td>${deps.length}</td></tr>
-              <tr><td><strong>Total dependabot vulnerabilities</strong></td><td>${Object.keys(auditMap).length}</td></tr>
+              <tr><td><strong>Total dependencies with vulnerabilities</strong></td><td>${Object.keys(auditMap).length}</td></tr>
+              <tr><td><strong>Total dependabot vulnerabilities</strong></td><td>${totalVulns}</td></tr>
               <tr><td>Critical dependabot vulnerabilities</td><td>${severityCounts.critical}</td></tr>
               <tr><td>High dependabot vulnerabilities</td><td>${severityCounts.high}</td></tr>
               <tr><td>Moderate dependabot vulnerabilities</td><td>${severityCounts.moderate}</td></tr>
