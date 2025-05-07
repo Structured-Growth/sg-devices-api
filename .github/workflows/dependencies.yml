@@ -153,23 +153,26 @@ jobs:
               <tr><td>Low dependabot vulnerabilities</td><td>${severityCounts.low}</td></tr>
               <tr><td>Informational dependabot vulnerabilities</td><td>${severityCounts.info}</td></tr>
             </table>
-          
-            ["critical", "high", "moderate", "low", "info"].forEach(level => {
-              const entries = vulnDetails[level];
-              if (entries.length) {
-                html += `<h3>${level.charAt(0).toUpperCase() + level.slice(1)} dependabot vulnerabilities</h3>`;
-                html += `<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
-                entries.forEach((entry, i) => {
-                html += `<tr><td>${i + 1}</td><td>${entry.name}</td><td>${entry.version}</td><td>${entry.report}</td></tr>`;
-              });
-                html += `</table>`;
-              }
-            });
-
-            <h2>Dependencies</h2>
-            <table>
-              <tr><th>#</th><th>Dependency</th><th>Version</th><th>Dependabot vulnerabilities</th></tr>
           `;
+        
+            const levels = ["critical", "high", "moderate", "low", "info"];
+            for (let l = 0; l < levels.length; l++) {
+              const level = levels[l];
+              const entries = vulnDetails[level];
+              if (entries && entries.length > 0) {
+                const title = level.charAt(0).toUpperCase() + level.slice(1) + " dependabot vulnerabilities";
+                html += "<h3>" + title + "</h3>";
+                html += "<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>";
+                for (let i = 0; i < entries.length; i++) {
+                  const entry = entries[i];
+                  html += "<tr><td>" + (i + 1) + "</td><td>" + entry.name + "</td><td>" + entry.version + "</td><td>" + entry.report + "</td></tr>";
+                }
+                html += "</table>";
+              }
+            }
+          
+          html += "<h2>Dependencies</h2>";
+          html += "<table><tr><th>#</th><th>Dependency</th><th>Version</th><th>Dependabot vulnerabilities</th></tr>";
 
           deps.forEach((dep, i) => {
             html += `<tr>
