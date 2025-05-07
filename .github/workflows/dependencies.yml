@@ -90,21 +90,14 @@ jobs:
           
             const counts = auditJson.metadata?.vulnerabilities || {};
           
-            severityCounts = {
-              info: counts.info || 0,
-              low: counts.low || 0,
-              moderate: counts.moderate || 0,
-              high: counts.high || 0,
-              critical: counts.critical || 0
-            };
-          
-            totalVulns = counts.total || 0;
-          
             for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
               const severities = {};
               vuln.via.forEach(v => {
-                if (typeof v === "string") return;
-                severities[v.severity] = (severities[v.severity] || 0) + 1;
+                  if (typeof v === "object" && v.severity) {
+                  severityCounts[v.severity] += 1;
+                  totalVulns += 1;
+                  severities[v.severity] = (severities[v.severity] || 0) + 1;
+                }
               });
             
               const severity = Object.keys(severities)[0] || "info";
