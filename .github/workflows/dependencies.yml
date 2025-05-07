@@ -88,20 +88,27 @@ jobs:
             const vulnerabilities = auditJson.vulnerabilities || {};
             console.log(`⚠️ Packages with vulnerabilities: ${Object.keys(vulnerabilities).length}`);
           
-            const counts = auditJson.metadata?.vulnerabilities || {};
-          
             for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
               const severities = {};
+              let hasObject = false;
+          
               vuln.via.forEach(v => {
-                  if (typeof v === "object" && v.severity) {
+                if (typeof v === "object" && v.severity) {
                   severityCounts[v.severity] += 1;
                   totalVulns += 1;
                   severities[v.severity] = (severities[v.severity] || 0) + 1;
                 }
               });
+          
+              if (!hasObject && vuln.severity) {
+                severityCounts[vuln.severity] += 1;
+                totalVulns += 1;
+                severities[vuln.severity] = (severities[vuln.severity] || 0) + 1;
+              }
             
-              const severity = Object.keys(severities)[0] || "info";
+              const severity = Object.keys(severities)[0] || vuln.severity;
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
+          
               const descriptions = vuln.via
                 .filter(v => typeof v === "object" && v.title)
                 .map(v => {
