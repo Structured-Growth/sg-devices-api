@@ -119,11 +119,27 @@ jobs:
                 })
                 .join("<br>");
           
-              for (const level of Object.keys(severities)) {
-                vulnDetails[level].push({
-                  name: pkg,
+              vuln.via.forEach(v => {
+                if (typeof v !== "object" || !v.severity) return;
+            
+                const severity = v.severity;
+            
+                vulnDetails[severity].push({
+                  package: pkg,
                   version: vuln.range || "N/A",
-                  report: descriptions || "No details available"
+                  dependency: v.dependency || pkg,
+                  severity: severity,
+                  report: v.title + (v.url ? ` <a href="${v.url}" target="_blank">Details</a>` : "")
+                });
+              });
+          
+              if (!hasObject && vuln.severity) {
+                vulnDetails[vuln.severity].push({
+                  package: pkg,
+                  version: vuln.range || "N/A",
+                  dependency: pkg,
+                  severity: vuln.severity,
+                  report: "No details available"
                 });
               }
             
@@ -181,16 +197,30 @@ jobs:
           
               html += `<table>
                 <colgroup>
-                <col style="width: 5%">
-                <col style="width: 25%">
-                <col style="width: 20%">
-                <col style="width: 50%">
+                  <col style="width: 5%">
+                  <col style="width: 25%">
+                  <col style="width: 20%">
+                  <col style="width: 10%">
+                  <col style="width: 40%">
                 </colgroup>
-                <tr><th>#</th><th>Dependency</th><th>Version</th><th>Description</th></tr>`;
+                <tr>
+                  <th>#</th>
+                  <th>Dependency</th>
+                  <th>Version</th>
+                  <th>Severity</th>
+                  <th>Description</th>
+                </tr>`;
   
               entries.forEach((entry, i) => {
-                html += `<tr><td>${i + 1}</td><td>${entry.name}</td><td>${entry.version}</td><td>${entry.report}</td></tr>`;
+                html += `<tr>
+                  <td>${i + 1}</td>
+                  <td>${entry.dependency}</td>
+                  <td>${entry.version}</td>
+                  <td>${entry.severity}</td>
+                  <td>${entry.report}</td>
+                </tr>`;
               });
+          
               html += `</table>`;
             }
           });
