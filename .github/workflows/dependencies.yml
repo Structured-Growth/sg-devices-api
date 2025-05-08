@@ -90,21 +90,19 @@ jobs:
           
             for (const [pkg, vuln] of Object.entries(vulnerabilities)) {
               const severities = {};
-              let hasObject = false;
           
               vuln.via.forEach(v => {
                 if (typeof v === "object" && v.severity) {
                   severityCounts[v.severity] += 1;
                   totalVulns += 1;
                   severities[v.severity] = (severities[v.severity] || 0) + 1;
+                } else if (typeof v === "string") {
+                  const severity = vuln.severity;
+                  severityCounts[severity] += 1;
+                  totalVulns += 1;
+                  severities[severity] = (severities[severity] || 0) + 1;
                 }
               });
-          
-              if (!hasObject && vuln.severity) {
-                severityCounts[vuln.severity] += 1;
-                totalVulns += 1;
-                severities[vuln.severity] = (severities[vuln.severity] || 0) + 1;
-              }
             
               const summary = Object.entries(severities).map(([s, c]) => `${s}: ${c}`).join(", ");
           
@@ -120,28 +118,26 @@ jobs:
                 .join("<br>");
           
               vuln.via.forEach(v => {
-                if (typeof v !== "object" || !v.severity) return;
-            
-                const severity = v.severity;
-            
-                vulnDetails[severity].push({
-                  package: pkg,
-                  version: vuln.range || "N/A",
-                  dependency: v.dependency || pkg,
-                  severity: severity,
-                  report: v.title + (v.url ? ` <a href="${v.url}" target="_blank">Details</a>` : "")
+                if (typeof v === "object" && v.severity) {
+                  const severity = v.severity;
+                  
+                  vulnDetails[severity].push({
+                    package: pkg,
+                    version: vuln.range || "N/A",
+                    dependency: v.dependency || pkg,
+                    severity: severity,
+                    report: v.title + (v.url ? ` <a href="${v.url}" target="_blank">Details</a>` : "")
+                  });
+                } else if (typeof v === "string") {
+                    vulnDetails[vuln.severity].push({
+                      package: pkg,
+                      version: vuln.range || "N/A",
+                      dependency: `${pkg} > ${v}`,
+                      severity: vuln.severity,
+                      report: `Affected indirectly via "${v}" used by "${pkg}". No detailed report available.`
+                    });
+                  }
                 });
-              });
-          
-              if (!hasObject && vuln.severity) {
-                vulnDetails[vuln.severity].push({
-                  package: pkg,
-                  version: vuln.range || "N/A",
-                  dependency: pkg,
-                  severity: vuln.severity,
-                  report: "No details available"
-                });
-              }
             
               auditMap[pkg] = summary + (descriptions ? "<br>" + descriptions : "");
             }
