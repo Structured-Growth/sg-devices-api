@@ -46,7 +46,7 @@ describe("POST /api/v1/devices/bulk", () => {
 			assert.include("us", device.region);
 			assert.include(["active", "inactive"], device.status);
 		}
-	}).timeout(1800000);
+	});
 
 	it("Should return validation error on invalid bulk payload", async () => {
 		const { statusCode, body } = await server.post("/v1/devices/bulk").send([
@@ -80,5 +80,5 @@ describe("POST /api/v1/devices/bulk", () => {
 		assert.isString(body.validation.body[0].serialNumber[0]);
 		assert.isString(body.validation.body[0].imei[0]);
 		assert.isString(body.validation.body[0].status[0]);
-	}).timeout(1800000);
+	});
 });

@@ -3,6 +3,8 @@ import { DevicesRepository } from "./devices.repository";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
 import Device from "../../../database/models/device";
 import { Transaction } from "sequelize";
+import { parse } from "papaparse";
+import { DeviceBulkCreateValidator } from "../../validators/device-bulk-create-csv.validator";
 
 @autoInjectable()
 export class DevicesService {
@@ -12,6 +14,49 @@ export class DevicesService {
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
+	}
+
+	public async importFromCsv(buffer: Buffer): Promise<Device[]> {
+		const content = buffer.toString("utf-8");
+
+		const result = parse<Record<string, any>>(content, {
+			header: true,
+			skipEmptyLines: true,
+		});
+
+		if (result.errors.length > 0) {
+			throw new ValidationError(
+				{},
+				`${this.i18n.__("error.upload.parse_error")} ${result.errors
+					.map((e) => `${e.message} (row: ${e.row})`)
+					.join("; ")}`
+			);
+		}
+
+		const rawData = result.data;
+
+		const { error } = DeviceBulkCreateValidator.validate(rawData, { abortEarly: false });
+
+		if (error) {
+			const errors = error.details.map((e) => `${e.message} (path: ${e.path.join(".")})`).join("; ");
+			throw new ValidationError({}, `${this.i18n.__("error.upload.validation_failed")} ${errors}`);
+		}
+
+		const devices: DeviceCreateBodyInterface[] = rawData.map((row) => ({
+			orgId: Number(row.orgId),
+			region: row.region,
+			accountId: row.accountId ? Number(row.accountId) : undefined,
+			userId: row.userId ? Number(row.userId) : undefined,
+			deviceCategoryId: Number(row.deviceCategoryId),
+			deviceTypeId: Number(row.deviceTypeId),
+			manufacturer: row.manufacturer || undefined,
+			modelNumber: row.modelNumber || undefined,
+			serialNumber: row.serialNumber || undefined,
+			imei: row.imei || undefined,
+			status: row.status || undefined,
+		}));
+
+		return await this.bulk(devices);
 	}
 
 	public async bulk(devices: DeviceCreateBodyInterface[]): Promise<Device[]> {
@@ -25,7 +70,7 @@ export class DevicesService {
 			return await Device.bulkCreate(params, { transaction });
 		} catch (e) {
 			if (e.name === "SequelizeUniqueConstraintError") {
-				throw new ValidationError({}, this.i18n.__("error.metric.exists"));
+				throw new ValidationError({}, this.i18n.__("error.device.exists"));
 			} else {
 				throw e;
 			}

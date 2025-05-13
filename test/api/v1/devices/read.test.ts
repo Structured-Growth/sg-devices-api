@@ -23,7 +23,7 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		assert.isNumber(body.id);
 		assert.equal(body.orgId, 1);
 		context["deviceId"] = body.id;
-	}).timeout(1800000);
+	});
 
 	it("Should read device", async () => {
 		const { statusCode, body } = await server.get(`/v1/devices/${context.deviceId}`);
@@ -42,12 +42,12 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		assert.equal(body.imei, "dfrffds12855644");
 		assert.equal(body.status, "active");
 		assert.isString(body.arn);
-	}).timeout(1800000);
+	});
 
 	it("Should return is device does not exist", async () => {
 		const { statusCode, body } = await server.get(`/v1/devices/999999`).send({});
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.isString(body.message);
-	}).timeout(1800000);
+	});
 });

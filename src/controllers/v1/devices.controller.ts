@@ -6,9 +6,11 @@ import {
 	DescribeResource,
 	inject,
 	NotFoundError,
+	BadRequestError,
 	SearchResultInterface,
 	ValidateFuncArgs,
 	I18nType,
+	ValidationError,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DeviceAttributes } from "../../../database/models/device";
@@ -136,6 +138,30 @@ export class DevicesController extends BaseController {
 			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
 			arn: device.arn,
 		}));
+	}
+
+	/**
+	 * Upload devices from CSV
+	 */
+	@OperationId("UploadCSV")
+	@Post("/upload")
+	@SuccessResponse(200, "CSV file processed")
+	@DescribeAction("devices/upload")
+	async uploadCsv(@Queries() query: {}): Promise<{ success: boolean; created: number }> {
+		if (!this.request.files || !Array.isArray(this.request.files) || this.request.files.length === 0) {
+			throw new ValidationError({}, this.i18n.__("error.upload.no_file"));
+		}
+
+		const file = this.request.files[0];
+
+		if (!file || file.mimetype !== "text/csv") {
+			throw new ValidationError({}, this.i18n.__("error.upload.invalid_file"));
+		}
+
+		const result = await this.devicesService.importFromCsv(file.buffer);
+
+		this.response.status(201);
+		return { success: true, created: result.length };
 	}
 
 	/**

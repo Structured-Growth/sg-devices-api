@@ -22,19 +22,19 @@ describe("DELETE /api/v1/devices/:deviceId", () => {
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
 		context["deviceId"] = body.id;
-	}).timeout(1800000);
+	});
 
 	it("Should delete device", async () => {
 		const { statusCode, body } = await server.delete(`/v1/devices/${context.deviceId}`);
 		assert.equal(statusCode, 204);
-	}).timeout(1800000);
+	});
 
 	it("Should return if device does not exist", async () => {
 		const { statusCode, body } = await server.delete(`/v1/devices/255`);
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.isString(body.message);
-	}).timeout(1800000);
+	});
 
 	it("Should return validation error if id is wrong", async () => {
 		const { statusCode, body } = await server.delete(`/v1/devices/wrong`);
@@ -42,5 +42,5 @@ describe("DELETE /api/v1/devices/:deviceId", () => {
 		assert.isString(body.message);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.validation.deviceId[0]);
-	}).timeout(1800000);
+	});
 });

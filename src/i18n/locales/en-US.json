@@ -12,6 +12,12 @@
     "device": {
       "name": "Device",
       "exist": "Device with given ID already exists"
+    },
+    "upload": {
+      "no_file": "CSV file is required",
+      "invalid_file": "Invalid file type",
+      "parse_error": "CSV parse error(s):",
+      "validation_failed": "CSV validation failed:"
     }
   },
   "validator": {
