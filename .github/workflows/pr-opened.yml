@@ -10,7 +10,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  # 1. run unit test
+# 1. run unit test
   unit-tests:
     name: Unit tests
     uses: ./.github/workflows/unit-tests.yml
@@ -25,21 +25,21 @@ jobs:
       DB_MASTER_PASSWORD: ${{ secrets.DB_MASTER_PASSWORD }}
       DB_SCHEMA: ${{ secrets.DB_SCHEMA }}
 
-  # 2. lint commit messages
-  #  lint-commit:
-  #    needs: [unit-tests]
-  #    name: Commit lint
-  #    uses: ./.github/workflows/commitlint.yml
-  #    if: success()
+# 2. lint commit messages
+#    lint-commit:
+#      needs: [unit-tests]
+#      name: Commit lint
+#      uses: ./.github/workflows/commitlint.yml
+#      if: success()
 
-  # 3. prettier check
+# 3. prettier check
   prettier-check:
     needs: [unit-tests]
     name: Prettier check
     uses: ./.github/workflows/prettier.yml
     if: success()
 
-  # 4. slack notification about PR is opened
+# 4. slack notification about PR is opened
   notify-slack:
     needs: [unit-tests, prettier-check]
     name: Notify Slack

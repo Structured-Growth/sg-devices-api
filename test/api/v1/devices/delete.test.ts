@@ -30,7 +30,7 @@ describe("DELETE /api/v1/devices/:deviceId", () => {
 	});
 
 	it("Should return if device does not exist", async () => {
-		const { statusCode, body } = await server.delete(`/v1/devices/255`);
+		const { statusCode, body } = await server.delete(`/v1/devices/99999999`);
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.isString(body.message);

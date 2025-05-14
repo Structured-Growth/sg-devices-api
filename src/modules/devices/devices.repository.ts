@@ -9,6 +9,7 @@ import {
 } from "@structured-growth/microservice-sdk";
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
+import { Transaction } from "sequelize";
 
 @autoInjectable()
 export class DevicesRepository
@@ -52,8 +53,8 @@ export class DevicesRepository
 		};
 	}
 
-	public async create(params: DeviceCreationAttributes): Promise<Device> {
-		return Device.create(params);
+	public async create(params: DeviceCreationAttributes, transaction?: Transaction): Promise<Device> {
+		return Device.create(params, { transaction });
 	}
 
 	public async read(
