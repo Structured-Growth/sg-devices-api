@@ -4,7 +4,7 @@ import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.i
 import Device from "../../../database/models/device";
 import { Transaction } from "sequelize";
 import { parse } from "papaparse";
-import { DeviceBulkCreateValidator } from "../../validators/device-bulk-create-csv.validator";
+import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
 
 @autoInjectable()
 export class DevicesService {
@@ -35,7 +35,7 @@ export class DevicesService {
 
 		const rawData = result.data;
 
-		const { error } = DeviceBulkCreateValidator.validate(rawData, { abortEarly: false });
+		const { error } = DeviceBulkCreateParamsValidator.validate({ query: {}, body: rawData }, { abortEarly: false });
 
 		if (error) {
 			const errors = error.details.map((e) => `${e.message} (path: ${e.path.join(".")})`).join("; ");
@@ -55,6 +55,24 @@ export class DevicesService {
 			imei: row.imei || undefined,
 			status: row.status || undefined,
 		}));
+
+		const serialNumbers = devices.map((d) => d.serialNumber).filter((sn): sn is string => Boolean(sn));
+
+		if (serialNumbers.length > 0) {
+			const existingDevices = await Device.findAll({
+				where: {
+					serialNumber: serialNumbers,
+				},
+				attributes: ["serialNumber"],
+			});
+
+			const existingSerials = new Set(existingDevices.map((d) => d.serialNumber));
+
+			if (existingSerials.size > 0) {
+				const conflictList = [...existingSerials].join(", ");
+				throw new ValidationError({}, this.i18n.__("error.device.serial_exists") + `: ${conflictList}`);
+			}
+		}
 
 		return await this.bulk(devices);
 	}

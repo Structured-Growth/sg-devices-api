@@ -4,21 +4,40 @@ import { initTest } from "../../../common/init-test";
 import * as fs from "fs";
 import * as path from "path";
 import * as FormData from "form-data";
+import { v4 as uuidv4 } from "uuid";
+
+function generateDeviceCsvBuffer(count: number = 5): Buffer {
+	const header =
+		"orgId,region,accountId,userId,deviceCategoryId,deviceTypeId,manufacturer,modelNumber,serialNumber,imei,status";
+	const rows = [];
+
+	for (let i = 0; i < count; i++) {
+		rows.push(
+			["1", "US", "123", "456", "1", "2", "Apple", "ModelX", uuidv4(), `12345678901234${i}`, "active"].join(",")
+		);
+	}
+
+	const content = [header, ...rows].join("\n");
+	return Buffer.from(content, "utf-8");
+}
 
 describe("POST /api/v1/devices/upload", () => {
 	const { server } = initTest();
 
-	it("Should import devices from valid CSV", async () => {
-		const csvPath = path.resolve(__dirname, "./csv-mock/device_bulk_create_sample.csv");
+	it("Should import devices from generated CSV buffer", async () => {
+		const csvBuffer = generateDeviceCsvBuffer(5);
+		const form = new FormData();
 
-		const response = await server
-			.post("/v1/devices/upload")
-			.attach("file", fs.createReadStream(csvPath), "devices-valid.csv");
+		form.append("file", csvBuffer, {
+			filename: "devices.csv",
+			contentType: "text/csv",
+		});
+
+		const response = await server.post("/v1/devices/upload").set(form.getHeaders()).send(form.getBuffer());
 
 		assert.equal(response.statusCode, 201);
 		assert.isTrue(response.body.success);
-		assert.isNumber(response.body.created);
-		assert.isAbove(response.body.created, 0);
+		assert.equal(response.body.created, 5);
 	});
 
 	it("Should fail on invalid CSV data", async () => {

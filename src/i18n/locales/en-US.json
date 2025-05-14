@@ -11,7 +11,8 @@
     },
     "device": {
       "name": "Device",
-      "exist": "Device with given ID already exists"
+      "exist": "Device with given ID already exists",
+      "serial_exists": "Device with given serial numbers exists"
     },
     "upload": {
       "no_file": "CSV file is required",
