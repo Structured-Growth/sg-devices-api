@@ -6,18 +6,22 @@ import {
 	DescribeResource,
 	inject,
 	NotFoundError,
+	BadRequestError,
 	SearchResultInterface,
 	ValidateFuncArgs,
 	I18nType,
+	ValidationError,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DeviceAttributes } from "../../../database/models/device";
 import { DevicesRepository } from "../../modules/devices/devices.repository";
+import { DevicesService } from "../../modules/devices/devices.service";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { DeviceUpdateBodyInterface } from "../../interfaces/device-update-body.interface";
 import { DeviceSearchParamsValidator } from "../../validators/device-search-params.validator";
 import { DeviceCreateParamsValidator } from "../../validators/device-create-params.validator";
+import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
 import { DeviceReadParamsValidator } from "../../validators/device-read-params.validator";
 import { DeviceUpdateParamsValidator } from "../../validators/device-update-params.validator";
 import { DeviceDeleteParamsValidator } from "../../validators/device-delete-params.validator";
@@ -50,6 +54,7 @@ export class DevicesController extends BaseController {
 	private i18n: I18nType;
 	constructor(
 		@inject("DevicesRepository") private devicesRepository: DevicesRepository,
+		@inject("DevicesService") private devicesService: DevicesService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		super();
@@ -103,6 +108,60 @@ export class DevicesController extends BaseController {
 			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
 			arn: device.arn,
 		};
+	}
+
+	/**
+	 * Bulk Create Devices.
+	 */
+	@OperationId("Bulk")
+	@Post("/bulk")
+	@SuccessResponse(201, "Returns created devices")
+	@DescribeAction("devices/bulk")
+	@ValidateFuncArgs(DeviceBulkCreateParamsValidator)
+	async bulk(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface[]): Promise<PublicDeviceAttributes[]> {
+		this.response.status(201);
+
+		const createdDevices = await this.devicesService.bulk(body);
+
+		for (const [index, device] of createdDevices.entries()) {
+			await this.eventBus.publish(
+				new EventMutation(
+					this.principal.arn,
+					device.arn,
+					`${this.appPrefix}:devices/create`,
+					JSON.stringify(body[index])
+				)
+			);
+		}
+
+		return createdDevices.map((device) => ({
+			...(pick(device.toJSON(), publicDeviceAttributes) as PublicDeviceAttributes),
+			arn: device.arn,
+		}));
+	}
+
+	/**
+	 * Upload devices from CSV
+	 */
+	@OperationId("UploadCSV")
+	@Post("/upload")
+	@SuccessResponse(200, "CSV file processed")
+	@DescribeAction("devices/upload")
+	async uploadCsv(@Queries() query: {}): Promise<{ success: boolean; created: number }> {
+		if (!this.request.files || !Array.isArray(this.request.files) || this.request.files.length === 0) {
+			throw new ValidationError({}, this.i18n.__("error.upload.no_file"));
+		}
+
+		const file = this.request.files[0];
+
+		if (!file || file.mimetype !== "text/csv") {
+			throw new ValidationError({}, this.i18n.__("error.upload.invalid_file"));
+		}
+
+		const result = await this.devicesService.importFromCsv(file.buffer);
+
+		this.response.status(201);
+		return { success: true, created: result.length };
 	}
 
 	/**
