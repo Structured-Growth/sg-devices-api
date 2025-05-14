@@ -45,7 +45,7 @@ jobs:
     name: Notify Slack
     uses: ./.github/workflows/slack-notification-pr.yml
     with:
-      env: "Pull Request Validation Completed"
+      env: "Pull Requestt Validation Completed"
       workflow_run_id: ${{ github.run_id }}
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
