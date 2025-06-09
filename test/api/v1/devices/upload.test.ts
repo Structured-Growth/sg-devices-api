@@ -8,12 +8,28 @@ import { v4 as uuidv4 } from "uuid";
 
 function generateDeviceCsvBuffer(count: number = 5): Buffer {
 	const header =
-		"orgId,region,accountId,userId,deviceCategoryId,deviceTypeId,manufacturer,modelNumber,serialNumber,imei,status";
+		"orgId,region,accountId,userId,deviceCategoryId,deviceTypeId,manufacturer,modelNumber,serialNumber,imei,status,metadata.ieee,metadata.SA8SN,metadata.PCBAMfSN,metadata.calCode";
 	const rows = [];
 
 	for (let i = 0; i < count; i++) {
 		rows.push(
-			["1", "US", "123", "456", "1", "2", "Apple", "ModelX", uuidv4(), `12345678901234${i}`, "active"].join(",")
+			[
+				"1",
+				"US",
+				"123",
+				"456",
+				"1",
+				"2",
+				"Apple",
+				"ModelX",
+				uuidv4(),
+				`12345678901234${i}`,
+				"active",
+				"c1",
+				"c2",
+				"c3",
+				"c4",
+			].join(",")
 		);
 	}
 

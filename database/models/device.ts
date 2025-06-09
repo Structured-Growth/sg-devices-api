@@ -22,6 +22,7 @@ export interface DeviceAttributes extends Omit<DefaultModelInterface, "accountId
 	serialNumber?: string | null;
 	imei?: string | null;
 	status: "active" | "inactive" | "archived";
+	metadata?: Record<string, string | number>;
 }
 
 export interface DeviceCreationAttributes
@@ -40,6 +41,7 @@ export interface DeviceUpdateAttributes
 			| "serialNumber"
 			| "imei"
 			| "status"
+			| "metadata"
 		>
 	> {}
 
@@ -82,6 +84,11 @@ export class Device extends Model<DeviceAttributes, DeviceCreationAttributes> im
 
 	@Column(DataType.STRING)
 	status: DeviceAttributes["status"];
+
+	@Column({
+		type: DataType.JSONB,
+	})
+	metadata: Record<string, string | number>;
 
 	static get arnPattern(): string {
 		return [container.resolve("appPrefix"), "<region>", "<orgId>", "<accountId>", "devices/<deviceId>"].join(":");

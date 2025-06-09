@@ -18,6 +18,10 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 			serialNumber: "45896572",
 			imei: "dfrffds12855644",
 			status: "active",
+			metadata: {
+				a: 1,
+				b: 2,
+			},
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
@@ -35,6 +39,10 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 			serialNumber: "45886572",
 			imei: "dfrdfdf12855644",
 			status: "inactive",
+			metadata: {
+				a: 2,
+				b: 1,
+			},
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.id, context.deviceId);
@@ -46,6 +54,8 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.equal(body.modelNumber, "y201");
 		assert.equal(body.serialNumber, "45886572");
 		assert.equal(body.imei, "dfrdfdf12855644");
+		assert.equal(body.metadata.a, 2);
+		assert.equal(body.metadata.b, 1);
 		assert.isString(body.arn);
 	});
 
