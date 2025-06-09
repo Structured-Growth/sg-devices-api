@@ -20,4 +20,8 @@ export interface DeviceUpdateBodyInterface {
 	serialNumber?: string;
 	imei?: string;
 	status?: DeviceAttributes["status"];
+	/**
+	 * Custom metadata could be added to a metric
+	 */
+	metadata?: Record<string, string | number>;
 }

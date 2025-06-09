@@ -23,4 +23,8 @@ export interface DeviceCreateBodyInterface {
 	serialNumber?: string;
 	imei?: string;
 	status: "active" | "inactive";
+	/**
+	 * Custom metadata could be added to a metric
+	 */
+	metadata?: Record<string, string | number>;
 }

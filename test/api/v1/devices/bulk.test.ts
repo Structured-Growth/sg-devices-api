@@ -19,6 +19,10 @@ describe("POST /api/v1/devices/bulk", () => {
 				serialNumber: "abc123456",
 				imei: "imei123456",
 				status: "active",
+				metadata: {
+					a: 1,
+					b: 2,
+				},
 			},
 			{
 				orgId: 1,
@@ -32,6 +36,10 @@ describe("POST /api/v1/devices/bulk", () => {
 				serialNumber: "abc654321",
 				imei: "imei654321",
 				status: "inactive",
+				metadata: {
+					a: 1,
+					b: 2,
+				},
 			},
 		]);
 
@@ -45,6 +53,8 @@ describe("POST /api/v1/devices/bulk", () => {
 			assert.equal(device.orgId, 1);
 			assert.include("us", device.region);
 			assert.include(["active", "inactive"], device.status);
+			assert.equal(device.metadata.a, 1);
+			assert.equal(device.metadata.b, 2);
 		}
 	});
 

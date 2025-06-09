@@ -13,5 +13,15 @@ export const DeviceUpdateParamsValidator = joi.object({
 		serialNumber: joi.string().max(100).label("validator.devices.serialNumber"),
 		imei: joi.string().max(50).label("validator.devices.imei"),
 		status: joi.string().valid("active", "inactive", "archived"),
+		metadata: joi
+			.object()
+			.max(10)
+			.pattern(
+				/^/,
+				joi
+					.alternatives()
+					.try(joi.boolean(), joi.number(), joi.string().max(255), joi.string().isoDate())
+					.allow("", null)
+			),
 	}),
 });

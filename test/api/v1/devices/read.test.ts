@@ -18,6 +18,10 @@ describe("GET /api/v1/devices/:deviceId", () => {
 			serialNumber: "45896572",
 			imei: "dfrffds12855644",
 			status: "active",
+			metadata: {
+				a: 1,
+				b: 2,
+			},
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
@@ -41,6 +45,8 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		assert.equal(body.serialNumber, "45896572");
 		assert.equal(body.imei, "dfrffds12855644");
 		assert.equal(body.status, "active");
+		assert.equal(body.metadata.a, 1);
+		assert.equal(body.metadata.b, 2);
 		assert.isString(body.arn);
 	});
 
