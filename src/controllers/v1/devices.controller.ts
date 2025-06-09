@@ -42,6 +42,7 @@ const publicDeviceAttributes = [
 	"status",
 	"createdAt",
 	"updatedAt",
+	"metadata",
 	"arn",
 ] as const;
 type DeviceKeys = (typeof publicDeviceAttributes)[number];

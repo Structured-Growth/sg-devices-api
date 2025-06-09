@@ -33,7 +33,7 @@ export class DevicesService {
 			);
 		}
 
-		const rawData = result.data;
+		const rawData = result.data.map((item) => this.unFlattenKeys(item));
 
 		const { error } = DeviceBulkCreateParamsValidator.validate({ query: {}, body: rawData }, { abortEarly: false });
 
@@ -54,6 +54,7 @@ export class DevicesService {
 			serialNumber: row.serialNumber || undefined,
 			imei: row.imei || undefined,
 			status: row.status || undefined,
+			metadata: row.metadata || null,
 		}));
 
 		const serialNumbers = devices.map((d) => d.serialNumber).filter((sn): sn is string => Boolean(sn));
@@ -93,5 +94,23 @@ export class DevicesService {
 				throw e;
 			}
 		}
+	}
+
+	private unFlattenKeys(obj: { [key: string]: string }) {
+		const result: object = {};
+		for (const key in obj) {
+			const keys = key.split(".");
+			let nested = result;
+			for (let i = 0; i < keys.length; i++) {
+				const k = keys[i];
+				if (i === keys.length - 1) {
+					nested[k] = obj[key];
+				} else {
+					nested[k] = nested[k] || {};
+					nested = nested[k];
+				}
+			}
+		}
+		return result;
 	}
 }
