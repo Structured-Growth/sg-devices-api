@@ -11,6 +11,7 @@ import {
 	ValidateFuncArgs,
 	I18nType,
 	ValidationError,
+	HashFields,
 } from "@structured-growth/microservice-sdk";
 import { pick } from "lodash";
 import { DeviceAttributes } from "../../../database/models/device";
@@ -73,6 +74,7 @@ export class DevicesController extends BaseController {
 	@DescribeResource("Account", ({ query }) => Number(query.accountId))
 	@DescribeResource("User", ({ query }) => Number(query.userId))
 	@DescribeResource("Device", ({ query }) => query.id?.map(Number))
+	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceSearchParamsValidator)
 	async search(@Queries() query: DeviceSearchParamsInterface): Promise<SearchResultInterface<PublicDeviceAttributes>> {
 		const { data, ...result } = await this.devicesRepository.search(query);
@@ -97,6 +99,7 @@ export class DevicesController extends BaseController {
 	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
 	@DescribeResource("Account", ({ body }) => Number(body.accountId))
 	@DescribeResource("User", ({ body }) => Number(body.userId))
+	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesRepository.create(body);
 		this.response.status(201);
@@ -118,6 +121,7 @@ export class DevicesController extends BaseController {
 	@Post("/bulk")
 	@SuccessResponse(201, "Returns created devices")
 	@DescribeAction("devices/bulk")
+	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceBulkCreateParamsValidator)
 	async bulk(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface[]): Promise<PublicDeviceAttributes[]> {
 		this.response.status(201);
@@ -173,6 +177,7 @@ export class DevicesController extends BaseController {
 	@SuccessResponse(200, "Returns device")
 	@DescribeAction("devices/read")
 	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
+	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceReadParamsValidator)
 	async get(@Path() deviceId: number): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesRepository.read(deviceId);
@@ -197,6 +202,7 @@ export class DevicesController extends BaseController {
 	@SuccessResponse(200, "Returns updated device")
 	@DescribeAction("devices/update")
 	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
+	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceUpdateParamsValidator)
 	async update(
 		@Path() deviceId: number,
