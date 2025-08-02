@@ -28,6 +28,8 @@ import { DeviceUpdateParamsValidator } from "../../validators/device-update-para
 import { DeviceDeleteParamsValidator } from "../../validators/device-delete-params.validator";
 import { EventMutation } from "@structured-growth/microservice-sdk";
 
+// For devops
+
 const publicDeviceAttributes = [
 	"id",
 	"orgId",
