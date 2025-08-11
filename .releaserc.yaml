@@ -49,8 +49,7 @@ plugins:
 
   - - '@semantic-release/npm'
   - - '@codedependant/semantic-release-docker'
-    - dockerLogin: false
-      dockerProject: null
+    - dockerProject: "structuredgrowth"
       dockerBuildFlags:
         platform: linux/amd64
       dockerArgs:
