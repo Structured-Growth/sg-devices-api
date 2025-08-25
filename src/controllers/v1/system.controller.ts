@@ -65,8 +65,6 @@ export class SystemController extends BaseController {
 	@DescribeAction("system/i18n-upload")
 	@Hidden()
 	public async uploadI18n(): Promise<void> {
-		console.log("MAIN_JSON: ", mainJson);
-		console.log("JOI_JSON: ", defaultJoiTranslations);
 		const merged = { ...mainJson, ...defaultJoiTranslations };
 
 		const payload = {
