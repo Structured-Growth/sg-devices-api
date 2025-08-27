@@ -4,8 +4,8 @@ export const DeviceUpdateParamsValidator = joi.object({
 	deviceId: joi.number().positive().required().label("validator.devices.deviceId"),
 	query: joi.object(),
 	body: joi.object({
-		accountId: joi.number().positive().label("validator.devices.accountId"),
-		userId: joi.number().positive().label("validator.devices.userId"),
+		accountId: joi.number().positive().allow(null).label("validator.devices.accountId"),
+		userId: joi.number().positive().allow(null).label("validator.devices.userId"),
 		deviceCategoryId: joi.number().positive().label("validator.devices.deviceCategoryId"),
 		deviceTypeId: joi.number().positive().label("validator.devices.deviceTypeId"),
 		manufacturer: joi.string().max(50).label("validator.devices.manufacturer"),
