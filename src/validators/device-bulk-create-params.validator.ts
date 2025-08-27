@@ -8,8 +8,8 @@ export const DeviceBulkCreateParamsValidator = joi.object({
 			joi.object({
 				orgId: joi.number().positive().required().label("validator.devices.orgId"),
 				region: joi.string().required().min(2).max(10).label("validator.devices.region"),
-				accountId: joi.number().positive().label("validator.devices.accountId"),
-				userId: joi.number().positive().label("validator.devices.userId"),
+				accountId: joi.number().positive().allow(null).label("validator.devices.accountId"),
+				userId: joi.number().positive().allow(null).label("validator.devices.userId"),
 				deviceCategoryId: joi.number().positive().required().label("validator.devices.deviceCategoryId"),
 				deviceTypeId: joi.number().positive().required().label("validator.devices.deviceTypeId"),
 				manufacturer: joi.string().max(50).label("validator.devices.manufacturer"),
