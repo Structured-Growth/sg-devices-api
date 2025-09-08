@@ -58,11 +58,11 @@ export class Device extends Model<DeviceAttributes, DeviceCreationAttributes> im
 	@Column(DataType.STRING)
 	region: RegionEnum;
 
-	@Column
-	accountId: number;
+	@Column({ allowNull: true })
+	accountId: number | null;
 
-	@Column
-	userId: number;
+	@Column({ allowNull: true })
+	userId: number | null;
 
 	@Column
 	deviceCategoryId: DeviceCategoryIdEnum;
