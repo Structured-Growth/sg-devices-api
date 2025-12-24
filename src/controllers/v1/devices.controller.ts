@@ -20,15 +20,15 @@ import { DevicesService } from "../../modules/devices/devices.service";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { DeviceUpdateBodyInterface } from "../../interfaces/device-update-body.interface";
+import { DeviceGetProductSNParamsInterface } from "../../interfaces/device-get-product-sn-params.interface";
 import { DeviceSearchParamsValidator } from "../../validators/device-search-params.validator";
 import { DeviceCreateParamsValidator } from "../../validators/device-create-params.validator";
 import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
 import { DeviceReadParamsValidator } from "../../validators/device-read-params.validator";
 import { DeviceUpdateParamsValidator } from "../../validators/device-update-params.validator";
 import { DeviceDeleteParamsValidator } from "../../validators/device-delete-params.validator";
+import { DeviceGetProductSNParamsValidator } from "../../validators/device-get-product-sn-params.validator";
 import { EventMutation } from "@structured-growth/microservice-sdk";
-
-// For devops
 
 const publicDeviceAttributes = [
 	"id",
@@ -88,6 +88,19 @@ export class DevicesController extends BaseController {
 			})),
 			...result,
 		};
+	}
+
+	/**
+	 * Search Serial Numbers
+	 */
+	@OperationId("SearchSerialNumbers")
+	@Get("/get-product-sn")
+	@SuccessResponse(200, "Returns list of serial numbers")
+	@DescribeAction("devices/get-product-sn")
+	@ValidateFuncArgs(DeviceGetProductSNParamsValidator)
+	async getProductSN(@Queries() query: DeviceGetProductSNParamsInterface): Promise<Array<Record<string, string>>> {
+		const { result } = await this.devicesService.getProductSN(query);
+		return result;
 	}
 
 	/**

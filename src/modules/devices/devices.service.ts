@@ -5,6 +5,7 @@ import Device from "../../../database/models/device";
 import { Transaction } from "sequelize";
 import { parse } from "papaparse";
 import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
+import { DeviceGetProductSNParamsInterface } from "../../interfaces/device-get-product-sn-params.interface";
 
 @autoInjectable()
 export class DevicesService {
@@ -94,6 +95,34 @@ export class DevicesService {
 				throw e;
 			}
 		}
+	}
+
+	public async getProductSN(
+		params: DeviceGetProductSNParamsInterface
+	): Promise<{ result: Array<Record<string, string>> }> {
+		const serialNumbers = (params.serialNumber || []).filter(Boolean);
+
+		if (serialNumbers.length === 0) {
+			return { result: [] };
+		}
+
+		const devices = await Device.findAll({
+			where: { serialNumber: serialNumbers },
+			attributes: ["serialNumber", "metadata"],
+		});
+
+		const result: Array<Record<string, string>> = [];
+
+		for (const d of devices) {
+			const ieee = d.serialNumber;
+			const psn = d?.metadata?.productSerialNumber;
+
+			if (typeof ieee === "string" && ieee && typeof psn === "string" && psn) {
+				result.push({ [ieee]: psn });
+			}
+		}
+
+		return { result };
 	}
 
 	private unFlattenKeys(obj: { [key: string]: string }) {
