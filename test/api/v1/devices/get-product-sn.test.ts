@@ -21,6 +21,11 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 	});
 
 	it("Should return serialNumber -> productSerialNumber mapping", async () => {
+		const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+		const snOk = `IEEE-OK-1-${suffix}`;
+		const snNo = `IEEE-NO-PSN-${suffix}`;
+
 		const d1 = await server.post("/v1/devices").send({
 			orgId: 1,
 			region: "us",
@@ -30,12 +35,10 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 			deviceTypeId: 1,
 			manufacturer: "siemens",
 			modelNumber: "x201",
-			serialNumber: "IEEE-OK-1",
-			imei: "imei-1",
+			serialNumber: snOk,
+			imei: `imei-1-${suffix}`,
 			status: "active",
-			metadata: {
-				productSerialNumber: "PSN-111",
-			},
+			metadata: { productSerialNumber: "PSN-111" },
 		});
 		assert.equal(d1.statusCode, 201);
 
@@ -48,30 +51,32 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 			deviceTypeId: 1,
 			manufacturer: "siemens",
 			modelNumber: "x201",
-			serialNumber: "IEEE-NO-PSN",
-			imei: "imei-2",
+			serialNumber: snNo,
+			imei: `imei-2-${suffix}`,
 			status: "active",
-			metadata: {
-				a: 1,
-			},
+			metadata: { a: 1 },
 		});
 		assert.equal(d2.statusCode, 201);
 
 		const { statusCode, body } = await server.get("/v1/devices/get-product-sn").query({
-			"serialNumber[0]": "IEEE-OK-1",
-			"serialNumber[1]": "IEEE-NO-PSN",
-			"serialNumber[2]": "IEEE-NOT-EXISTS",
+			"serialNumber[0]": snOk,
+			"serialNumber[1]": snNo,
+			"serialNumber[2]": `IEEE-NOT-EXISTS-${suffix}`,
 		});
 
 		assert.equal(statusCode, 200);
 		assert.isArray(body);
 
 		assert.equal(body.length, 1);
-		assert.isObject(body[0]);
-		assert.equal(body[0]["IEEE-OK-1"], "PSN-111");
+		assert.equal(body[0][snOk], "PSN-111");
 	});
 
 	it("Should return empty array when nothing found / no productSerialNumber", async () => {
+		const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+
+		const snNoPsn = `IEEE-ONLY-NO-PSN-${suffix}`;
+		const snAbsent = `IEEE-ABSENT-${suffix}`;
+
 		const d = await server.post("/v1/devices").send({
 			orgId: 1,
 			region: "us",
@@ -81,8 +86,8 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 			deviceTypeId: 1,
 			manufacturer: "siemens",
 			modelNumber: "x201",
-			serialNumber: "IEEE-ONLY-NO-PSN",
-			imei: "imei-3",
+			serialNumber: snNoPsn,
+			imei: `imei-3-${suffix}`,
 			status: "active",
 			metadata: {
 				foo: "bar",
@@ -91,8 +96,8 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 		assert.equal(d.statusCode, 201);
 
 		const { statusCode, body } = await server.get("/v1/devices/get-product-sn").query({
-			"serialNumber[0]": "IEEE-ONLY-NO-PSN",
-			"serialNumber[1]": "IEEE-ABSENT-999",
+			"serialNumber[0]": snNoPsn,
+			"serialNumber[1]": snAbsent,
 		});
 
 		assert.equal(statusCode, 200);
