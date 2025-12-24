@@ -25,6 +25,7 @@ router.get(pathPrefix + '/v1/ping/alive', handleRequest(Controllers.PingControll
 
 //DevicesController
 router.get(pathPrefix + '/v1/devices', handleRequest(Controllers.DevicesController, "search", handlerOpts));
+router.get(pathPrefix + '/v1/devices/get-product-sn', handleRequest(Controllers.DevicesController, "getProductSN", handlerOpts));
 router.post(pathPrefix + '/v1/devices', handleRequest(Controllers.DevicesController, "create", handlerOpts));
 router.post(pathPrefix + '/v1/devices/bulk', handleRequest(Controllers.DevicesController, "bulk", handlerOpts));
 router.post(pathPrefix + '/v1/devices/upload', handleRequest(Controllers.DevicesController, "uploadCsv", handlerOpts));
@@ -43,6 +44,7 @@ export const actionToRouteMap = {
 	"SystemController.uploadI18n": 'post /v1/system/i18n-upload',
 	"PingController.pingGet": 'get /v1/ping/alive',
 	"DevicesController.search": 'get /v1/devices',
+	"DevicesController.getProductSN": 'get /v1/devices/get-product-sn',
 	"DevicesController.create": 'post /v1/devices',
 	"DevicesController.bulk": 'post /v1/devices/bulk',
 	"DevicesController.uploadCsv": 'post /v1/devices/upload',
