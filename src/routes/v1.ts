@@ -29,6 +29,7 @@ router.get(pathPrefix + '/v1/devices/get-product-sn', handleRequest(Controllers.
 router.post(pathPrefix + '/v1/devices', handleRequest(Controllers.DevicesController, "create", handlerOpts));
 router.post(pathPrefix + '/v1/devices/bulk', handleRequest(Controllers.DevicesController, "bulk", handlerOpts));
 router.post(pathPrefix + '/v1/devices/upload', handleRequest(Controllers.DevicesController, "uploadCsv", handlerOpts));
+router.get(pathPrefix + '/v1/devices/csv-template', handleRequest(Controllers.DevicesController, "downloadCsvTemplate", handlerOpts));
 router.get(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "get", handlerOpts));
 router.put(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "update", handlerOpts));
 router.delete(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "delete", handlerOpts));
@@ -48,6 +49,7 @@ export const actionToRouteMap = {
 	"DevicesController.create": 'post /v1/devices',
 	"DevicesController.bulk": 'post /v1/devices/bulk',
 	"DevicesController.uploadCsv": 'post /v1/devices/upload',
+	"DevicesController.downloadCsvTemplate": 'get /v1/devices/csv-template',
 	"DevicesController.get": 'get /v1/devices/:deviceId',
 	"DevicesController.update": 'put /v1/devices/:deviceId',
 	"DevicesController.delete": 'delete /v1/devices/:deviceId',
