@@ -72,5 +72,7 @@ export function loadEnvironment() {
 		REDIS_TLS: joi.bool().allow(""),
 		REDIS_KEY_PREFIX: joi.string().allow(""),
 		MAX_WORKERS: joi.number().positive().required(),
+		DEVICES_CSV_TEMPLATE_HEADERS: joi.string().required(),
+		DEVICES_CSV_TEMPLATE_EXAMPLE: joi.string().required(),
 	});
 }

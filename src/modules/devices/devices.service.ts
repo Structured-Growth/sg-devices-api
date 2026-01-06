@@ -3,7 +3,7 @@ import { DevicesRepository } from "./devices.repository";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
 import Device from "../../../database/models/device";
 import { Transaction } from "sequelize";
-import { parse } from "papaparse";
+import { parse, unparse } from "papaparse";
 import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
 import { DeviceGetProductSNParamsInterface } from "../../interfaces/device-get-product-sn-params.interface";
 
@@ -17,7 +17,7 @@ export class DevicesService {
 		this.i18n = this.getI18n();
 	}
 
-	public async importFromCsv(buffer: Buffer): Promise<Device[]> {
+	public async importFromCsv(buffer: Buffer, defaults: { orgId: number; region: string }): Promise<Device[]> {
 		const content = buffer.toString("utf-8");
 
 		const result = parse<Record<string, any>>(content, {
@@ -36,14 +36,20 @@ export class DevicesService {
 
 		const rawData = result.data.map((item) => this.unFlattenKeys(item));
 
-		const { error } = DeviceBulkCreateParamsValidator.validate({ query: {}, body: rawData }, { abortEarly: false });
+		const normalized = rawData.map((row: any) => ({
+			...row,
+			orgId: defaults.orgId,
+			region: defaults.region,
+		}));
+
+		const { error } = DeviceBulkCreateParamsValidator.validate({ query: {}, body: normalized }, { abortEarly: false });
 
 		if (error) {
 			const errors = error.details.map((e) => `${e.message} (path: ${e.path.join(".")})`).join("; ");
 			throw new ValidationError({}, `${this.i18n.__("error.upload.validation_failed")} ${errors}`);
 		}
 
-		const devices: DeviceCreateBodyInterface[] = rawData.map((row) => ({
+		const devices: DeviceCreateBodyInterface[] = normalized.map((row) => ({
 			orgId: Number(row.orgId),
 			region: row.region,
 			accountId: row.accountId ? Number(row.accountId) : undefined,
@@ -123,6 +129,35 @@ export class DevicesService {
 		}
 
 		return { result };
+	}
+
+	public buildCsvTemplate(): string {
+		const headers = (process.env.DEVICES_CSV_TEMPLATE_HEADERS || "")
+			.split(",")
+			.map((h) => h.trim())
+			.filter(Boolean);
+
+		const exampleStr = process.env.DEVICES_CSV_TEMPLATE_EXAMPLE || "";
+		const examplePairs = exampleStr
+			.split(",")
+			.map((p) => p.trim())
+			.filter(Boolean);
+
+		const exampleMap: Record<string, string> = {};
+		for (const pair of examplePairs) {
+			const [rawKey, ...rest] = pair.split("=");
+			const key = (rawKey || "").trim();
+			if (!key) continue;
+
+			exampleMap[key] = rest.join("=").trim();
+		}
+
+		const exampleRow: Record<string, any> = {};
+		for (const h of headers) {
+			exampleRow[h] = Object.prototype.hasOwnProperty.call(exampleMap, h) ? exampleMap[h] : "";
+		}
+
+		return unparse([exampleRow], { columns: headers });
 	}
 
 	private unFlattenKeys(obj: { [key: string]: string }) {

@@ -7,6 +7,7 @@ import {
 	inject,
 	NotFoundError,
 	BadRequestError,
+	UnauthorizedError,
 	SearchResultInterface,
 	ValidateFuncArgs,
 	I18nType,
@@ -178,10 +179,38 @@ export class DevicesController extends BaseController {
 			throw new ValidationError({}, this.i18n.__("error.upload.invalid_file"));
 		}
 
-		const result = await this.devicesService.importFromCsv(file.buffer);
+		if (!("orgId" in this.principal) || !("region" in this.principal)) {
+			throw new UnauthorizedError(this.i18n.__("error.common.unauthorized"));
+		}
+
+		const result = await this.devicesService.importFromCsv(file.buffer, {
+			orgId: Number(this.principal.orgId),
+			region: this.principal.region,
+		});
 
 		this.response.status(201);
 		return { success: true, created: result.length };
+	}
+
+	/**
+	 * Download devices CSV template
+	 */
+	@OperationId("DownloadCSVTemplate")
+	@Get("/csv-template")
+	@SuccessResponse(200, "Returns CSV template file")
+	@DescribeAction("devices/csv-template")
+	async downloadCsvTemplate(): Promise<void> {
+		const csv = this.devicesService.buildCsvTemplate();
+
+		this.response.status(200);
+		this.response.setHeader("Content-Type", "text/csv; charset=utf-8");
+		this.response.setHeader("Content-Disposition", 'attachment; filename="devices-import-template.csv"');
+
+		this.response.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+		this.response.setHeader("Pragma", "no-cache");
+		this.response.setHeader("Expires", "0");
+
+		this.response.send(csv);
 	}
 
 	/**
