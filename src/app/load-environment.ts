@@ -74,5 +74,8 @@ export function loadEnvironment() {
 		MAX_WORKERS: joi.number().positive().required(),
 		DEVICES_CSV_TEMPLATE_HEADERS: joi.string().required(),
 		DEVICES_CSV_TEMPLATE_EXAMPLE: joi.string().required(),
+		DEVICES_CSV_FILE_HEADERS: joi.string().required(),
+		DEVICES_CSV_FILE_TYPES: joi.string().required(),
+		DEVICES_CSV_DEFAULTS: joi.string().required(),
 	});
 }

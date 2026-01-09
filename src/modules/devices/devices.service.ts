@@ -4,8 +4,16 @@ import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.i
 import Device from "../../../database/models/device";
 import { Transaction } from "sequelize";
 import { parse, unparse } from "papaparse";
-import { DeviceBulkCreateParamsValidator } from "../../validators/device-bulk-create-params.validator";
 import { DeviceGetProductSNParamsInterface } from "../../interfaces/device-get-product-sn-params.interface";
+import { CsvTypesMap, CsvDefaults } from "../../interfaces/device-upload-csv.interface";
+import { RegionEnum } from "@structured-growth/microservice-sdk";
+import {
+	parseHeaders,
+	parseJson,
+	compareHeaders,
+	validateCell,
+	asTrimmedString,
+} from "../../helpers/device-upload-csv";
 
 @autoInjectable()
 export class DevicesService {
@@ -20,67 +28,32 @@ export class DevicesService {
 	public async importFromCsv(buffer: Buffer, defaults: { orgId: number; region: string }): Promise<Device[]> {
 		const content = buffer.toString("utf-8");
 
-		const result = parse<Record<string, any>>(content, {
+		const parsed = parse<Record<string, any>>(content, {
 			header: true,
 			skipEmptyLines: true,
 		});
 
-		if (result.errors.length > 0) {
+		if (parsed.errors.length > 0) {
 			throw new ValidationError(
 				{},
-				`${this.i18n.__("error.upload.parse_error")} ${result.errors
+				`${this.i18n.__("error.upload.parse_error")} ${parsed.errors
 					.map((e) => `${e.message} (row: ${e.row})`)
 					.join("; ")}`
 			);
 		}
 
-		const rawData = result.data.map((item) => this.unFlattenKeys(item));
+		const rows = (parsed.data ?? []) as Record<string, any>[];
+		const actualHeaders = ((parsed.meta?.fields ?? []) as string[]).map((h) => (h ?? "").toString());
 
-		const normalized = rawData.map((row: any) => ({
-			...row,
-			orgId: defaults.orgId,
-			region: defaults.region,
-		}));
+		const schema = this.getCsvSchemaFromEnv();
 
-		const { error } = DeviceBulkCreateParamsValidator.validate({ query: {}, body: normalized }, { abortEarly: false });
+		this.validateCsvHeaders(actualHeaders, schema.expectedHeaders);
 
-		if (error) {
-			const errors = error.details.map((e) => `${e.message} (path: ${e.path.join(".")})`).join("; ");
-			throw new ValidationError({}, `${this.i18n.__("error.upload.validation_failed")} ${errors}`);
-		}
+		this.validateCsvTypes(rows, schema.expectedHeaders, schema.types);
 
-		const devices: DeviceCreateBodyInterface[] = normalized.map((row) => ({
-			orgId: Number(row.orgId),
-			region: row.region,
-			accountId: row.accountId ? Number(row.accountId) : undefined,
-			userId: row.userId ? Number(row.userId) : undefined,
-			deviceCategoryId: Number(row.deviceCategoryId),
-			deviceTypeId: Number(row.deviceTypeId),
-			manufacturer: row.manufacturer || undefined,
-			modelNumber: row.modelNumber || undefined,
-			serialNumber: row.serialNumber || undefined,
-			imei: row.imei || undefined,
-			status: row.status || undefined,
-			metadata: row.metadata || null,
-		}));
+		const devices = rows.map((row) => this.mapCsvRowToDevice(row, defaults, schema.defaults));
 
-		const serialNumbers = devices.map((d) => d.serialNumber).filter((sn): sn is string => Boolean(sn));
-
-		if (serialNumbers.length > 0) {
-			const existingDevices = await Device.findAll({
-				where: {
-					serialNumber: serialNumbers,
-				},
-				attributes: ["serialNumber"],
-			});
-
-			const existingSerials = new Set(existingDevices.map((d) => d.serialNumber));
-
-			if (existingSerials.size > 0) {
-				const conflictList = [...existingSerials].join(", ");
-				throw new ValidationError({}, this.i18n.__("error.device.serial_exists") + `: ${conflictList}`);
-			}
-		}
+		await this.assertSerialNumbersNotExists(devices);
 
 		return await this.bulk(devices);
 	}
@@ -160,21 +133,123 @@ export class DevicesService {
 		return unparse([exampleRow], { columns: headers });
 	}
 
-	private unFlattenKeys(obj: { [key: string]: string }) {
-		const result: object = {};
-		for (const key in obj) {
-			const keys = key.split(".");
-			let nested = result;
-			for (let i = 0; i < keys.length; i++) {
-				const k = keys[i];
-				if (i === keys.length - 1) {
-					nested[k] = obj[key];
-				} else {
-					nested[k] = nested[k] || {};
-					nested = nested[k];
-				}
-			}
+	private getCsvSchemaFromEnv(): { expectedHeaders: string[]; types: CsvTypesMap; defaults: CsvDefaults } {
+		const expectedHeaders = parseHeaders(process.env.DEVICES_CSV_FILE_HEADERS);
+
+		if (!expectedHeaders.length) {
+			throw new ValidationError({}, "CSV headers configuration is missing (DEVICES_CSV_FILE_HEADERS).");
 		}
-		return result;
+
+		const types = parseJson<CsvTypesMap>(process.env.DEVICES_CSV_FILE_TYPES, {});
+		if (!Object.keys(types).length) {
+			throw new ValidationError({}, "CSV types configuration is missing (DEVICES_CSV_FILE_TYPES).");
+		}
+
+		const missingTypeDefs = expectedHeaders.filter((h) => !types[h]);
+		if (missingTypeDefs.length) {
+			throw new ValidationError({}, `Missing type definitions for: ${missingTypeDefs.join(", ")}`);
+		}
+
+		const defaults = parseJson<CsvDefaults>(process.env.DEVICES_CSV_DEFAULTS, {
+			deviceCategoryId: 1,
+			deviceTypeId: 5,
+			manufacturer: "",
+			modelNumber: "",
+			imei: "0",
+			status: "active",
+		});
+
+		if (!defaults.deviceCategoryId || !defaults.deviceTypeId || !defaults.status) {
+			throw new ValidationError(
+				{},
+				"CSV defaults config is missing deviceCategoryId/deviceTypeId/status (DEVICES_CSV_DEFAULTS)."
+			);
+		}
+
+		return { expectedHeaders, types, defaults };
+	}
+
+	private validateCsvHeaders(actualHeaders: string[], expectedHeaders: string[]) {
+		const { missing, extra, sameOrder } = compareHeaders(actualHeaders, expectedHeaders);
+
+		if (missing.length || extra.length || !sameOrder) {
+			const msg = [
+				missing.length ? `Missing columns: ${missing.join(", ")}` : "",
+				extra.length ? `Extra columns: ${extra.join(", ")}` : "",
+				!sameOrder ? "Column order does not match template." : "",
+			]
+				.filter(Boolean)
+				.join(" | ");
+
+			throw new ValidationError({}, `${this.i18n.__("error.upload.validation_failed")} ${msg}`);
+		}
+	}
+
+	private validateCsvTypes(rows: Record<string, any>[], expectedHeaders: string[], types: CsvTypesMap) {
+		const errors: string[] = [];
+
+		rows.forEach((row, idx) => {
+			expectedHeaders.forEach((col) => {
+				const rule = types[col];
+				const msg = validateCell(row[col], rule);
+				if (msg) errors.push(`Row ${idx + 2}, column "${col}": ${msg}`);
+			});
+		});
+
+		if (errors.length) {
+			throw new ValidationError({}, `${this.i18n.__("error.upload.validation_failed")} ${errors.join("; ")}`);
+		}
+	}
+
+	private mapCsvRowToDevice(
+		row: Record<string, any>,
+		ctx: { orgId: number; region: string },
+		csvDefaults: CsvDefaults
+	): DeviceCreateBodyInterface {
+		const serialNumber = asTrimmedString(row["IEEE"]) || undefined;
+
+		const metadata: Record<string, any> = {};
+		const sa8 = asTrimmedString(row["SA8 S/N"]);
+		if (sa8) metadata.productSerialNumber = sa8;
+		const cal = asTrimmedString(row["Calibration Code"]);
+		if (cal) metadata.calCode = cal;
+		const exp = asTrimmedString(row["Expiration Date"]);
+		if (exp) {
+			const d = new Date(exp);
+			if (Number.isNaN(d.getTime())) {
+				throw new ValidationError({}, `Invalid Expiration Date value: ${exp}`);
+			}
+			metadata.endOfLifeDatetime = d.toISOString();
+		}
+
+		return {
+			orgId: ctx.orgId,
+			region: ctx.region as RegionEnum,
+			deviceCategoryId: Number(csvDefaults.deviceCategoryId),
+			deviceTypeId: Number(csvDefaults.deviceTypeId),
+			manufacturer: csvDefaults.manufacturer ? String(csvDefaults.manufacturer) : undefined,
+			modelNumber: csvDefaults.modelNumber ? String(csvDefaults.modelNumber) : undefined,
+			imei: csvDefaults.imei ? String(csvDefaults.imei) : undefined,
+			status: (csvDefaults.status ?? "active") as "active" | "inactive",
+			serialNumber,
+			metadata: Object.keys(metadata).length ? metadata : null,
+		};
+	}
+
+	private async assertSerialNumbersNotExists(devices: DeviceCreateBodyInterface[]) {
+		const serialNumbers = devices.map((d) => d.serialNumber).filter((sn): sn is string => Boolean(sn));
+
+		if (serialNumbers.length === 0) return;
+
+		const existingDevices = await Device.findAll({
+			where: { serialNumber: serialNumbers },
+			attributes: ["serialNumber"],
+		});
+
+		const existingSerials = new Set(existingDevices.map((d) => d.serialNumber));
+		if (existingSerials.size > 0) {
+			const conflictList = [...existingSerials].join(", ");
+			throw new ValidationError({}, this.i18n.__("error.device.serial_exists") + `: ${conflictList}`);
+		}
 	}
 }
