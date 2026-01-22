@@ -137,17 +137,17 @@ export class DevicesService {
 		const expectedHeaders = parseHeaders(process.env.DEVICES_CSV_FILE_HEADERS);
 
 		if (!expectedHeaders.length) {
-			throw new ValidationError({}, "CSV headers configuration is missing (DEVICES_CSV_FILE_HEADERS).");
+			throw new ValidationError({}, this.i18n.__("error.device.csv_headers_missing"));
 		}
 
 		const types = parseJson<CsvTypesMap>(process.env.DEVICES_CSV_FILE_TYPES, {});
 		if (!Object.keys(types).length) {
-			throw new ValidationError({}, "CSV types configuration is missing (DEVICES_CSV_FILE_TYPES).");
+			throw new ValidationError({}, this.i18n.__("error.device.csv_types_missing"));
 		}
 
 		const missingTypeDefs = expectedHeaders.filter((h) => !types[h]);
 		if (missingTypeDefs.length) {
-			throw new ValidationError({}, `Missing type definitions for: ${missingTypeDefs.join(", ")}`);
+			throw new ValidationError({}, `${this.i18n.__("error.device.csv_missing_type")} ${missingTypeDefs.join(", ")}`);
 		}
 
 		const defaults = parseJson<CsvDefaults>(process.env.DEVICES_CSV_DEFAULTS, {
@@ -160,10 +160,7 @@ export class DevicesService {
 		});
 
 		if (!defaults.deviceCategoryId || !defaults.deviceTypeId || !defaults.status) {
-			throw new ValidationError(
-				{},
-				"CSV defaults config is missing deviceCategoryId/deviceTypeId/status (DEVICES_CSV_DEFAULTS)."
-			);
+			throw new ValidationError({}, this.i18n.__("error.device.csv_defaults_config"));
 		}
 
 		return { expectedHeaders, types, defaults };
@@ -174,9 +171,9 @@ export class DevicesService {
 
 		if (missing.length || extra.length || !sameOrder) {
 			const msg = [
-				missing.length ? `Missing columns: ${missing.join(", ")}` : "",
-				extra.length ? `Extra columns: ${extra.join(", ")}` : "",
-				!sameOrder ? "Column order does not match template." : "",
+				missing.length ? `${this.i18n.__("error.device.csv_missing_columns")} ${missing.join(", ")}` : "",
+				extra.length ? `${this.i18n.__("error.device.csv_extra_columns")} ${extra.join(", ")}` : "",
+				!sameOrder ? this.i18n.__("error.device.csv_column_order") : "",
 			]
 				.filter(Boolean)
 				.join(" | ");
@@ -192,7 +189,12 @@ export class DevicesService {
 			expectedHeaders.forEach((col) => {
 				const rule = types[col];
 				const msg = validateCell(row[col], rule);
-				if (msg) errors.push(`Row ${idx + 2}, column "${col}": ${msg}`);
+				if (msg)
+					errors.push(
+						`${this.i18n.__("validator.devices.row")} ${idx + 2}, ${this.i18n.__(
+							"validator.devices.column"
+						)} "${col}": ${msg}`
+					);
 			});
 		});
 
@@ -217,7 +219,7 @@ export class DevicesService {
 		if (exp) {
 			const d = new Date(exp);
 			if (Number.isNaN(d.getTime())) {
-				throw new ValidationError({}, `Invalid Expiration Date value: ${exp}`);
+				throw new ValidationError({}, `${this.i18n.__("error.device.csv_expiration_date")} ${exp}`);
 			}
 			metadata.endOfLifeDatetime = d.toISOString();
 		}

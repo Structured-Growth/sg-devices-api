@@ -7,13 +7,22 @@
   },
   "error": {
     "common": {
-      "not_found": "not found"
+      "not_found": "not found",
+			"unauthorized": "Unauthorized"
     },
     "device": {
       "name": "Device",
       "exist": "Device with given ID already exists",
-      "serial_exists": "Device with given serial numbers exists"
-    },
+      "serial_exists": "Device with given serial numbers exists",
+			"csv_headers_missing": "CSV headers configuration is missing (DEVICES_CSV_FILE_HEADERS).",
+			"csv_types_missing": "CSV types configuration is missing (DEVICES_CSV_FILE_TYPES).",
+			"csv_missing_type": "Missing type definitions for: ",
+			"csv_defaults_config": "CSV defaults config is missing deviceCategoryId/deviceTypeId/status (DEVICES_CSV_DEFAULTS).",
+			"csv_missing_columns": "Missing columns: ",
+			"csv_extra_columns": "Extra columns: ",
+			"csv_column_order": "Column order does not match template.",
+			"csv_expiration_date": "Invalid Expiration Date value: "
+		},
     "upload": {
       "no_file": "CSV file is required",
       "invalid_file": "Invalid file type",
@@ -41,7 +50,9 @@
       "imei": "IMEI",
       "region": "Region",
       "deviceId": "Device Id",
-      "devices": "Devices"
+      "devices": "Devices",
+			"row": "Row",
+			"column": "Column"
     }
   }
 }
