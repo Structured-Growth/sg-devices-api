@@ -73,9 +73,9 @@ export class DevicesController extends BaseController {
 	@Get("/")
 	@SuccessResponse(200, "Returns list of devices")
 	@DescribeAction("devices/search")
-	@DescribeResource("Organization", ({ query }) => Number(query.orgId))
-	@DescribeResource("Account", ({ query }) => Number(query.accountId))
-	@DescribeResource("User", ({ query }) => Number(query.userId))
+	@DescribeResource("Organization", ({ query }) => [Number(query.orgId)])
+	@DescribeResource("Account", ({ query }) => [Number(query.accountId)])
+	@DescribeResource("User", ({ query }) => [Number(query.userId)])
 	@DescribeResource("Device", ({ query }) => query.id?.map(Number))
 	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceSearchParamsValidator)
@@ -112,9 +112,9 @@ export class DevicesController extends BaseController {
 	@SuccessResponse(201, "Returns created device")
 	@DescribeAction("devices/create")
 	@ValidateFuncArgs(DeviceCreateParamsValidator)
-	@DescribeResource("Organization", ({ body }) => Number(body.orgId))
-	@DescribeResource("Account", ({ body }) => Number(body.accountId))
-	@DescribeResource("User", ({ body }) => Number(body.userId))
+	@DescribeResource("Organization", ({ body }) => [Number(body.orgId)])
+	@DescribeResource("Account", ({ body }) => [Number(body.accountId)])
+	@DescribeResource("User", ({ body }) => [Number(body.userId)])
 	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesRepository.create(body);
@@ -220,7 +220,7 @@ export class DevicesController extends BaseController {
 	@Get("/:deviceId")
 	@SuccessResponse(200, "Returns device")
 	@DescribeAction("devices/read")
-	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
+	@DescribeResource("Device", ({ params }) => [Number(params.deviceId)])
 	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceReadParamsValidator)
 	async get(@Path() deviceId: number): Promise<PublicDeviceAttributes> {
@@ -245,7 +245,7 @@ export class DevicesController extends BaseController {
 	@Put("/:deviceId")
 	@SuccessResponse(200, "Returns updated device")
 	@DescribeAction("devices/update")
-	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
+	@DescribeResource("Device", ({ params }) => [Number(params.deviceId)])
 	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	@ValidateFuncArgs(DeviceUpdateParamsValidator)
 	async update(
@@ -272,7 +272,7 @@ export class DevicesController extends BaseController {
 	@Delete("/:deviceId")
 	@SuccessResponse(204, "Returns nothing")
 	@DescribeAction("devices/delete")
-	@DescribeResource("Device", ({ params }) => Number(params.deviceId))
+	@DescribeResource("Device", ({ params }) => [Number(params.deviceId)])
 	@ValidateFuncArgs(DeviceDeleteParamsValidator)
 	async delete(@Path() deviceId: number): Promise<void> {
 		const device = await this.devicesRepository.read(deviceId);
