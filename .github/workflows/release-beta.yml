@@ -1,4 +1,4 @@
-name: Release Demo
+name: Release Beta
 
 on:
   push:
@@ -12,9 +12,9 @@ permissions:
   issues: read
 
 jobs:
-  # 1. demo release
+  # 1. beta release
   release:
-    name: Demo Release
+    name: Beta Release
     runs-on: ubuntu-latest
     env:
       DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
@@ -41,7 +41,7 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Semantic release (demo)
+      - name: Semantic release (beta)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,9 +52,9 @@ jobs:
   notify-slack:
     needs: [ release ]
     name: Notify Slack (demo)
-    uses: ./.github/workflows/slack-notification-rel-demo.yml
+    uses: ./.github/workflows/slack-notification-rel-beta.yml
     with:
-      env: "Create Demo Release"
+      env: "Create Beta Release"
       workflow_run_id: ${{ github.run_id }}
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
