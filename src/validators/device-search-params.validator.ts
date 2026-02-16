@@ -15,7 +15,7 @@ export const DeviceSearchParamsValidator = joi.object({
 			imei: joi.string().max(50).label("validator.devices.serialNumber"),
 			status: joi.string().valid("active", "inactive", "archived"),
 			q: joi.string().min(1).max(200).label("validator.devices.q"),
-			metadata: joi.object().pattern(joi.string().max(64), joi.string().max(200)).label("validator.devices.metadata"),
+			metadata: joi.string().max(2000).label("validator.devices.metadata"),
 		})
 		.concat(CommonSearchParamsValidator),
 });

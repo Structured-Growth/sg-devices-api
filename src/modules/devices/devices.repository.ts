@@ -25,7 +25,6 @@ export class DevicesRepository
 		const offset = (page - 1) * limit;
 		const where = {};
 		const order = params.sort ? (params.sort.map((item) => item.split(":")) as any) : [["createdAt", "desc"]];
-		const metadata = (params as any).metadata;
 
 		const qRaw = (params as any).q;
 		const q = typeof qRaw === "string" ? qRaw.trim() : "";
@@ -62,10 +61,23 @@ export class DevicesRepository
 		params.serialNumber && (where["serialNumber"] = params.serialNumber);
 		params.imei && (where["imei"] = params.imei);
 
-		if (metadata && typeof metadata === "object") {
+		const metadataRaw = (params as any).metadata;
+		const metadataStr = typeof metadataRaw === "string" ? metadataRaw.trim() : "";
+		let metadataObj: Record<string, unknown> | null = null;
+
+		if (metadataStr) {
+			if (metadataStr.startsWith("{") && metadataStr.endsWith("}")) {
+				const parsed = JSON.parse(metadataStr);
+				if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+					metadataObj = parsed as Record<string, unknown>;
+				}
+			}
+		}
+
+		if (metadataObj) {
 			where[Op.and] = where[Op.and] ?? [];
 
-			for (const [keyRaw, valRaw] of Object.entries(metadata)) {
+			for (const [keyRaw, valRaw] of Object.entries(metadataObj)) {
 				if (valRaw === null || valRaw === undefined) continue;
 
 				const key = String(keyRaw).replace(/[^a-zA-Z0-9_]/g, "");
