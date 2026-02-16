@@ -22,4 +22,6 @@ export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInt
 	serialNumber?: string;
 	imei?: string;
 	status?: DeviceAttributes["status"];
+	q?: string;
+	metadata?: Record<string, string | number | boolean>;
 }

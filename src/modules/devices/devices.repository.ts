@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, Sequelize } from "sequelize";
 import {
 	autoInjectable,
 	RepositoryInterface,
@@ -25,6 +25,30 @@ export class DevicesRepository
 		const offset = (page - 1) * limit;
 		const where = {};
 		const order = params.sort ? (params.sort.map((item) => item.split(":")) as any) : [["createdAt", "desc"]];
+		const metadata = (params as any).metadata;
+
+		const qRaw = (params as any).q;
+		const q = typeof qRaw === "string" ? qRaw.trim() : "";
+
+		if (q) {
+			const like = q.includes("*") ? q.replace(/\*/g, "%") : `%${q}%`;
+
+			const or: any[] = [];
+
+			or.push({ serialNumber: { [Op.iLike]: like } });
+
+			const asNumber = Number(q);
+			const isFiniteInt = Number.isFinite(asNumber) && Number.isInteger(asNumber);
+
+			if (isFiniteInt) {
+				or.push({ id: asNumber });
+				or.push({ accountId: asNumber });
+				or.push({ userId: asNumber });
+			}
+
+			where[Op.and] = where[Op.and] ?? [];
+			where[Op.and].push({ [Op.or]: or });
+		}
 
 		params.orgId && (where["orgId"] = params.orgId);
 		params.accountId && (where["accountId"] = params.accountId);
@@ -37,6 +61,29 @@ export class DevicesRepository
 		params.modelNumber && (where["modelNumber"] = params.modelNumber);
 		params.serialNumber && (where["serialNumber"] = params.serialNumber);
 		params.imei && (where["imei"] = params.imei);
+
+		if (metadata && typeof metadata === "object") {
+			where[Op.and] = where[Op.and] ?? [];
+
+			for (const [keyRaw, valRaw] of Object.entries(metadata)) {
+				if (valRaw === null || valRaw === undefined) continue;
+
+				const key = String(keyRaw).replace(/[^a-zA-Z0-9_]/g, "");
+				if (!key) continue;
+
+				const v = String(valRaw).trim();
+				if (!v) continue;
+
+				const left = Sequelize.literal(`("metadata"->>'${key}')`);
+
+				if (v.includes("*")) {
+					const like = v.replace(/\*/g, "%");
+					where[Op.and].push(Sequelize.where(left, { [Op.iLike]: like }));
+				} else {
+					where[Op.and].push(Sequelize.where(left, { [Op.eq]: v }));
+				}
+			}
+		}
 
 		const { rows, count } = await Device.findAndCountAll({
 			where,

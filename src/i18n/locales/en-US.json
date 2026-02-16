@@ -52,7 +52,9 @@
       "deviceId": "Device Id",
       "devices": "Devices",
 			"row": "Row",
-			"column": "Column"
+			"column": "Column",
+			"q": "Query",
+			"metadata": "Metadata"
     }
   }
 }
