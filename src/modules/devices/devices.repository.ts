@@ -58,7 +58,7 @@ export class DevicesRepository
 		params.deviceTypeId && (where["deviceTypeId"] = { [Op.in]: params.deviceTypeId });
 		params.manufacturer && (where["manufacturer"] = params.manufacturer);
 		params.modelNumber && (where["modelNumber"] = params.modelNumber);
-		params.serialNumber && (where["serialNumber"] = params.serialNumber);
+		params.serialNumber && (where["serialNumber"] = { [Op.in]: params.serialNumber });
 		params.imei && (where["imei"] = params.imei);
 
 		const metadataRaw = (params as any).metadata;

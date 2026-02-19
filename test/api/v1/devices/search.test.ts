@@ -73,7 +73,7 @@ describe("GET /api/v1/devices", () => {
 			"deviceTypeId[0]": 1,
 			manufacturer: "siemens",
 			modelNumber: "x201",
-			serialNumber: "45896572",
+			"serialNumber[0]": "45896572",
 			imei: "dfrffds12855644",
 			status: "active",
 		});
