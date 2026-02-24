@@ -58,8 +58,17 @@ export class DevicesRepository
 		params.deviceTypeId && (where["deviceTypeId"] = { [Op.in]: params.deviceTypeId });
 		params.manufacturer && (where["manufacturer"] = params.manufacturer);
 		params.modelNumber && (where["modelNumber"] = params.modelNumber);
-		params.serialNumber && (where["serialNumber"] = { [Op.in]: params.serialNumber });
 		params.imei && (where["imei"] = params.imei);
+
+		const serialRaw = (params as any).serialNumber;
+
+		const serialNumbers = typeof serialRaw === "string" ? [serialRaw] : Array.isArray(serialRaw) ? serialRaw : null;
+
+		const serialNumbersClean = serialNumbers?.map((s) => String(s).trim()).filter(Boolean);
+
+		if (serialNumbersClean?.length) {
+			where["serialNumber"] = { [Op.in]: serialNumbersClean };
+		}
 
 		const metadataRaw = (params as any).metadata;
 		const metadataStr = typeof metadataRaw === "string" ? metadataRaw.trim() : "";
