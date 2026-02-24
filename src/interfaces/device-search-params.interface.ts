@@ -19,7 +19,7 @@ export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInt
 	deviceTypeId?: number[];
 	manufacturer?: string;
 	modelNumber?: string;
-	serialNumber?: string | string[];
+	serialNumber?: string[];
 	imei?: string;
 	status?: DeviceAttributes["status"];
 	q?: string;
