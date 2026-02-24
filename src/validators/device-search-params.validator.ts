@@ -11,7 +11,10 @@ export const DeviceSearchParamsValidator = joi.object({
 			deviceTypeId: joi.array().items(joi.number().positive()).label("validator.devices.deviceTypeId"),
 			manufacturer: joi.string().max(50).label("validator.devices.manufacturer"),
 			modelNumber: joi.string().max(50).label("validator.devices.modelNumber"),
-			serialNumber: joi.array().items(joi.string().max(100)).label("validator.devices.serialNumber"),
+			serialNumber: joi
+				.alternatives()
+				.try(joi.array().items(joi.string().max(100)), joi.string().max(100))
+				.label("validator.devices.serialNumber"),
 			imei: joi.string().max(50).label("validator.devices.imei"),
 			status: joi.string().valid("active", "inactive", "archived"),
 			q: joi.string().min(1).max(200).label("validator.devices.q"),

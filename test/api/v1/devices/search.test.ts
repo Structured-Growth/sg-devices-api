@@ -63,7 +63,7 @@ describe("GET /api/v1/devices", () => {
 		assert.isString(body.validation.query.imei[0][0]);
 	});
 
-	it("Should return device", async () => {
+	it("Should return device (serialNumber as array)", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
 			"id[0]": context.deviceId,
 			orgId: 1,
@@ -95,5 +95,26 @@ describe("GET /api/v1/devices", () => {
 		assert.equal(body.page, 1);
 		assert.equal(body.limit, 20);
 		assert.equal(body.total, 1);
+	});
+
+	it("Should return device (serialNumber as string)", async () => {
+		const { statusCode, body } = await server.get("/v1/devices").query({
+			"id[0]": context.deviceId,
+			orgId: 1,
+			accountId: 1,
+			userId: 1,
+			deviceCategoryId: 1,
+			"deviceTypeId[0]": 1,
+			manufacturer: "siemens",
+			modelNumber: "x201",
+			serialNumber: "45896572",
+			imei: "dfrffds12855644",
+			status: "active",
+		});
+
+		assert.equal(statusCode, 200);
+		assert.equal(body.total, 1);
+		assert.equal(body.data[0].id, context.deviceId);
+		assert.equal(body.data[0].serialNumber, "45896572");
 	});
 });
