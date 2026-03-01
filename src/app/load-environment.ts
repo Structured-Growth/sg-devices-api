@@ -77,5 +77,8 @@ export function loadEnvironment() {
 		DEVICES_CSV_FILE_HEADERS: joi.string().required(),
 		DEVICES_CSV_FILE_TYPES: joi.string().required(),
 		DEVICES_CSV_DEFAULTS: joi.string().required(),
+		START_SQS_LISTENER_ON_WEBSERVER_STARTUP: joi.bool().required(),
+		QUEUE_PROVIDER: joi.string().required(),
+		SQS_QUEUE_URL: joi.string().allow(""),
 	});
 }
