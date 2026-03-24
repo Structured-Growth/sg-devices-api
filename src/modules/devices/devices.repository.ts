@@ -6,10 +6,14 @@ import {
 	NotFoundError,
 	I18nType,
 	inject,
+	validateCustomFields,
+	ValidationError,
+	CustomFieldValidateBody,
 } from "@structured-growth/microservice-sdk";
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { Transaction } from "sequelize";
+import { isUndefined, omitBy } from "lodash";
 
 @autoInjectable()
 export class DevicesRepository
@@ -122,6 +126,7 @@ export class DevicesRepository
 	}
 
 	public async create(params: DeviceCreationAttributes, transaction?: Transaction): Promise<Device> {
+		await this.validateMetadata(params.metadata, params.orgId);
 		return Device.create(params, { transaction });
 	}
 
@@ -142,7 +147,8 @@ export class DevicesRepository
 		if (!device) {
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
-		device.setAttributes(params);
+		device.setAttributes(omitBy(params, isUndefined));
+		await this.validateMetadata(device.toJSON().metadata, device.orgId);
 
 		return device.save();
 	}
@@ -152,6 +158,22 @@ export class DevicesRepository
 
 		if (n === 0) {
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
+		}
+	}
+
+	private async validateMetadata(data: CustomFieldValidateBody["data"], orgId?: number): Promise<void> {
+		const { valid, errors } = await validateCustomFields({
+			entity: "Device",
+			data,
+			orgId,
+		});
+
+		if (!valid) {
+			throw new ValidationError({
+				body: {
+					metadata: errors,
+				},
+			});
 		}
 	}
 }
