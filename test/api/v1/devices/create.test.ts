@@ -1,9 +1,26 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import {
+	installCustomFieldValidationMock,
+	restoreCustomFieldValidationMock,
+	setCustomFieldValidationPayload,
+} from "../../../common/mock-custom-field-validation";
 
 describe("POST /api/v1/devices", () => {
 	const { server, context } = initTest();
+
+	before(() => {
+		installCustomFieldValidationMock();
+	});
+
+	after(() => {
+		restoreCustomFieldValidationMock();
+	});
+
+	beforeEach(() => {
+		setCustomFieldValidationPayload({ valid: true });
+	});
 
 	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
@@ -70,5 +87,29 @@ describe("POST /api/v1/devices", () => {
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
 		assert.isString(body.validation.body.status[0]);
+	});
+
+	it("Should return validation error for invalid custom fields", async () => {
+		setCustomFieldValidationPayload({
+			valid: false,
+			errors: {
+				calCode: ["must be a string"],
+			},
+		});
+
+		const { statusCode, body } = await server.post("/v1/devices").send({
+			orgId: 1,
+			region: "us",
+			deviceCategoryId: 1,
+			deviceTypeId: 1,
+			status: "active",
+			metadata: {
+				calCode: 123,
+			},
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.metadata.calCode[0]);
 	});
 });
