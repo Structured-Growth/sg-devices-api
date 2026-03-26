@@ -1,0 +1,48 @@
+import "../../../../src/app/providers";
+import { assert } from "chai";
+import { initTest } from "../../../common/init-test";
+
+describe("GET /api/v1/device-custom-fields/:deviceCustomFieldId", () => {
+	const { server, context } = initTest();
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
+
+	it("Should create device custom field", async () => {
+		const { statusCode, body } = await server.post("/v1/device-custom-fields").send({
+			orgId,
+			region: "us",
+			entity: "Device",
+			title: "Calibration code",
+			name: "calCode",
+			schema: {
+				type: "string",
+			},
+			status: "active",
+		});
+		assert.equal(statusCode, 201);
+		assert.isNumber(body.id);
+		context["deviceCustomFieldId"] = body.id;
+	});
+
+	it("Should read device custom field", async () => {
+		const { statusCode, body } = await server.get(`/v1/device-custom-fields/${context.deviceCustomFieldId}`);
+		assert.equal(statusCode, 200);
+		assert.equal(body.id, context.deviceCustomFieldId);
+		assert.equal(body.orgId, orgId);
+		assert.equal(body.region, "us");
+		assert.equal(body.entity, "Device");
+		assert.equal(body.title, "Calibration code");
+		assert.equal(body.name, "calCode");
+		assert.equal(body.schema.type, "string");
+		assert.equal(body.status, "active");
+		assert.isString(body.createdAt);
+		assert.isString(body.updatedAt);
+		assert.isString(body.arn);
+	});
+
+	it("Should return if device custom field does not exist", async () => {
+		const { statusCode, body } = await server.get("/v1/device-custom-fields/999999").send({});
+		assert.equal(statusCode, 404);
+		assert.equal(body.name, "NotFound");
+		assert.isString(body.message);
+	});
+});

@@ -1,13 +1,19 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedDeviceCustomFields } from "../../../common/seed-device-custom-fields";
 
 describe("GET /api/v1/devices/:deviceId", () => {
 	const { server, context } = initTest();
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
+
+	beforeEach(() => {
+		return seedDeviceCustomFields(orgId);
+	});
 
 	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -25,7 +31,7 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		assert.equal(body.orgId, 1);
+		assert.equal(body.orgId, orgId);
 		context["deviceId"] = body.id;
 	});
 
@@ -33,7 +39,7 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		const { statusCode, body } = await server.get(`/v1/devices/${context.deviceId}`);
 		assert.equal(statusCode, 200);
 		assert.equal(body.id, context.deviceId);
-		assert.equal(body.orgId, 1);
+		assert.equal(body.orgId, orgId);
 		assert.equal(body.accountId, 1);
 		assert.equal(body.userId, 1);
 		assert.equal(body.deviceCategoryId, 1);

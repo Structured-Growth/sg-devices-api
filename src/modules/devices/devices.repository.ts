@@ -6,21 +6,23 @@ import {
 	NotFoundError,
 	I18nType,
 	inject,
-	validateCustomFields,
 	ValidationError,
-	CustomFieldValidateBody,
 } from "@structured-growth/microservice-sdk";
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { Transaction } from "sequelize";
 import { isUndefined, omitBy } from "lodash";
+import { DeviceCustomFieldService } from "../device-custom-fields/device-custom-field.service";
 
 @autoInjectable()
 export class DevicesRepository
 	implements RepositoryInterface<Device, DeviceSearchParamsInterface, DeviceCreationAttributes>
 {
 	private i18n: I18nType;
-	constructor(@inject("i18n") private getI18n: () => I18nType) {
+	constructor(
+		@inject("DeviceCustomFieldService") private deviceCustomFieldService: DeviceCustomFieldService,
+		@inject("i18n") private getI18n: () => I18nType
+	) {
 		this.i18n = this.getI18n();
 	}
 	public async search(params: DeviceSearchParamsInterface): Promise<SearchResultInterface<Device>> {
@@ -161,12 +163,8 @@ export class DevicesRepository
 		}
 	}
 
-	private async validateMetadata(data: CustomFieldValidateBody["data"], orgId?: number): Promise<void> {
-		const { valid, errors } = await validateCustomFields({
-			entity: "Device",
-			data,
-			orgId,
-		});
+	private async validateMetadata(data: Record<string, unknown>, orgId: number): Promise<void> {
+		const { valid, errors } = await this.deviceCustomFieldService.validate("Device", data || {}, orgId, false);
 
 		if (!valid) {
 			throw new ValidationError({

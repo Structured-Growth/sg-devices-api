@@ -1,13 +1,19 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedDeviceCustomFields } from "../../../common/seed-device-custom-fields";
 
 describe("GET /api/v1/devices", () => {
 	const { server, context } = initTest();
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
+
+	beforeEach(() => {
+		return seedDeviceCustomFields(orgId);
+	});
 
 	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -66,7 +72,7 @@ describe("GET /api/v1/devices", () => {
 	it("Should return device (serialNumber as array)", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
 			"id[0]": context.deviceId,
-			orgId: 1,
+			orgId,
 			accountId: 1,
 			userId: 1,
 			deviceCategoryId: 1,
@@ -79,7 +85,7 @@ describe("GET /api/v1/devices", () => {
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.deviceId);
-		assert.equal(body.data[0].orgId, 1);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].accountId, 1);
 		assert.equal(body.data[0].userId, 1);
 		assert.equal(body.data[0].deviceCategoryId, 1);
@@ -100,7 +106,7 @@ describe("GET /api/v1/devices", () => {
 	it("Should return device (serialNumber as string)", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
 			"id[0]": context.deviceId,
-			orgId: 1,
+			orgId,
 			accountId: 1,
 			userId: 1,
 			deviceCategoryId: 1,

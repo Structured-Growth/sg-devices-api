@@ -1,14 +1,20 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedDeviceCustomFields } from "../../../common/seed-device-custom-fields";
 
 describe("POST /api/v1/devices/bulk", () => {
 	const { server } = initTest();
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
+
+	beforeEach(() => {
+		return seedDeviceCustomFields(orgId);
+	});
 
 	it("Should bulk create devices", async () => {
 		const { statusCode, body } = await server.post("/v1/devices/bulk").send([
 			{
-				orgId: 1,
+				orgId,
 				region: "us",
 				accountId: 1,
 				userId: 1,
@@ -25,7 +31,7 @@ describe("POST /api/v1/devices/bulk", () => {
 				},
 			},
 			{
-				orgId: 1,
+				orgId,
 				region: "us",
 				accountId: 2,
 				userId: 2,
@@ -50,7 +56,7 @@ describe("POST /api/v1/devices/bulk", () => {
 		for (const device of body) {
 			assert.isNumber(device.id);
 			assert.isString(device.arn);
-			assert.equal(device.orgId, 1);
+			assert.equal(device.orgId, orgId);
 			assert.include("us", device.region);
 			assert.include(["active", "inactive"], device.status);
 			assert.equal(device.metadata.a, 1);

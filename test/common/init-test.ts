@@ -3,9 +3,9 @@ import { agent } from "supertest";
 import { webServer, container } from "@structured-growth/microservice-sdk";
 import { routes } from "../../src/routes";
 import {
-	installCustomFieldValidationMock,
-	setCustomFieldValidationPayload,
-} from "./mock-custom-field-validation";
+	installAccountOrganizationParentsMock,
+	restoreAccountOrganizationParentsMock,
+} from "./mock-account-organization-parents";
 
 export function initTest() {
 	const server = agent(webServer(routes));
@@ -15,12 +15,15 @@ export function initTest() {
 	container.register("authorizationEnabled", { useValue: false });
 
 	before(() => {
-		installCustomFieldValidationMock();
+		installAccountOrganizationParentsMock();
+	});
+
+	after(() => {
+		restoreAccountOrganizationParentsMock();
 	});
 
 	beforeEach(() => {
-		installCustomFieldValidationMock();
-		setCustomFieldValidationPayload({ valid: true });
+		installAccountOrganizationParentsMock();
 	});
 
 	waitAppIsReady();

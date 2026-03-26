@@ -3,9 +3,10 @@ import { assert } from "chai";
 import { App } from "../src/app/app";
 import { container, NotFoundError } from "@structured-growth/microservice-sdk";
 import { ResolverController } from "../src/controllers/v1";
+import { DeviceCustomFieldService } from "../src/modules/device-custom-fields/device-custom-field.service";
 
 describe("Test resolver", () => {
-	const controller = new ResolverController();
+	const controller = new ResolverController(container.resolve<DeviceCustomFieldService>("DeviceCustomFieldService"));
 	const app = container.resolve<App>("App");
 
 	before(async () => app.ready);
@@ -24,7 +25,8 @@ describe("Test resolver", () => {
 	it("Should return list of actions", async () => {
 		const { data } = await controller.actions();
 		assert.isArray(data);
-		assert.equal(data.filter((item) => item.action.includes("resolve")).length, 3);
+		assert.equal(data.filter((item) => item.action.includes("resolve")).length, 4);
+		assert.isTrue(data.some((item) => item.action.endsWith("resolve/validate")));
 	});
 
 	it("Should return list of models", async () => {

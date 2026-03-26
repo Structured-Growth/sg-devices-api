@@ -1,30 +1,19 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
-import {
-	installCustomFieldValidationMock,
-	restoreCustomFieldValidationMock,
-	setCustomFieldValidationPayload,
-} from "../../../common/mock-custom-field-validation";
+import { seedDeviceCustomFields } from "../../../common/seed-device-custom-fields";
 
 describe("PUT /api/v1/devices/:deviceId", () => {
 	const { server, context } = initTest();
-
-	before(() => {
-		installCustomFieldValidationMock();
-	});
-
-	after(() => {
-		restoreCustomFieldValidationMock();
-	});
+	const orgId = Math.floor(Math.random() * 1000000) + 1;
 
 	beforeEach(() => {
-		setCustomFieldValidationPayload({ valid: true });
+		return seedDeviceCustomFields(orgId);
 	});
 
 	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -118,16 +107,9 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 	});
 
 	it("Should return validation error for invalid custom fields on update", async () => {
-		setCustomFieldValidationPayload({
-			valid: false,
-			errors: {
-				productSerialNumber: ["is required"],
-			},
-		});
-
 		const { statusCode, body } = await server.put(`/v1/devices/${context.deviceId}`).send({
 			metadata: {
-				productSerialNumber: "",
+				productSerialNumber: 123,
 			},
 		});
 
