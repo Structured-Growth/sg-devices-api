@@ -115,18 +115,21 @@ describe("DeviceCustomFieldService", () => {
 			} as any
 		);
 
-		global.fetch = (async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+		const mockedFetch: typeof global.fetch = async (input: string | URL | Request, init?: RequestInit) => {
 			const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
+			const headers = new Headers(init?.headers);
+
 			assert.equal(url, "http://account-api.local/v1/organizations/55/parents");
-			assert.equal((init?.headers as Record<string, string>)?.Authorization, "Bearer test-token");
+			assert.equal(headers.get("Authorization"), "Bearer test-token");
 
 			return new Response(JSON.stringify([{ id: 11 }, { id: 12 }]), {
 				status: 200,
-				headers: {
+				headers: new Headers({
 					"Content-Type": "application/json",
-				},
+				}),
 			});
-		}) as typeof global.fetch;
+		};
+		global.fetch = mockedFetch;
 
 		await serviceWithFetch.search({
 			orgId: 55,
