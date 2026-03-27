@@ -36,6 +36,7 @@ router.delete(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.De
 
 //CustomFieldsController
 router.get(pathPrefix + '/v1/custom-fields', handleRequest(Controllers.CustomFieldsController, "search", handlerOpts));
+router.post(pathPrefix + '/v1/custom-fields/validate', handleRequest(Controllers.CustomFieldsController, "validateCustomFields", handlerOpts));
 router.post(pathPrefix + '/v1/custom-fields', handleRequest(Controllers.CustomFieldsController, "create", handlerOpts));
 router.get(pathPrefix + '/v1/custom-fields/:customFieldId', handleRequest(Controllers.CustomFieldsController, "get", handlerOpts));
 router.put(pathPrefix + '/v1/custom-fields/:customFieldId', handleRequest(Controllers.CustomFieldsController, "update", handlerOpts));
@@ -48,7 +49,6 @@ router.get(pathPrefix + '/v1/docs/swagger.json', handleRequest(Controllers.DocsC
 router.get(pathPrefix + '/v1/resolver/resolve', handleRequest(Controllers.ResolverController, "resolve", handlerOpts));
 router.get(pathPrefix + '/v1/resolver/actions', handleRequest(Controllers.ResolverController, "actions", handlerOpts));
 router.get(pathPrefix + '/v1/resolver/models', handleRequest(Controllers.ResolverController, "models", handlerOpts));
-router.post(pathPrefix + '/v1/resolver/validate', handleRequest(Controllers.ResolverController, "validateCustomFields", handlerOpts));
 
 // map is required for correct resolving action by route
 export const actionToRouteMap = {
@@ -65,6 +65,7 @@ export const actionToRouteMap = {
 	"DevicesController.update": 'put /v1/devices/:deviceId',
 	"DevicesController.delete": 'delete /v1/devices/:deviceId',
 	"CustomFieldsController.search": 'get /v1/custom-fields',
+	"CustomFieldsController.validateCustomFields": 'post /v1/custom-fields/validate',
 	"CustomFieldsController.create": 'post /v1/custom-fields',
 	"CustomFieldsController.get": 'get /v1/custom-fields/:customFieldId',
 	"CustomFieldsController.update": 'put /v1/custom-fields/:customFieldId',
@@ -73,5 +74,4 @@ export const actionToRouteMap = {
 	"ResolverController.resolve": 'get /v1/resolver/resolve',
 	"ResolverController.actions": 'get /v1/resolver/actions',
 	"ResolverController.models": 'get /v1/resolver/models',
-	"ResolverController.validateCustomFields": 'post /v1/resolver/validate',
 };

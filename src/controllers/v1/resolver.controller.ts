@@ -4,24 +4,18 @@ import {
 	BaseController,
 	DescribeAction,
 	NotFoundError,
-	ValidateFuncArgs,
-	inject,
 } from "@structured-growth/microservice-sdk";
 import * as controllers from "./index";
 import { ResolveQueryParamsInterface } from "../../interfaces/resolve-query-params.interface";
 import { ResolveResourceResponseInterface } from "../../interfaces/resolve-resource-response.interface";
 import { ResolveActionsResponseInterface } from "../../interfaces/resolve-actions-response.interface";
 import { ResolveModelsResponseInterface } from "../../interfaces/resolve-models-response.interface";
-import { ResolveCustomFieldValidateBodyInterface } from "../../interfaces/resolve-custom-field-validate-body.interface";
-import { ResolveCustomFieldValidateResponseInterface } from "../../interfaces/resolve-custom-field-validate-response.interface";
-import { ResolveCustomFieldValidateValidator } from "../../validators/resolve-custom-field-validate.validator";
-import { CustomFieldService } from "../../modules/custom-fields/custom-field.service";
 
 @Route("v1/resolver")
 @Tags("ResolverController")
 @autoInjectable()
 export class ResolverController extends BaseController {
-	constructor(@inject("CustomFieldService") private customFieldService: CustomFieldService) {
+	constructor() {
 		super();
 	}
 
@@ -110,20 +104,5 @@ export class ResolverController extends BaseController {
 		return {
 			data: models,
 		};
-	}
-
-	/**
-	 * Validate custom field payload for entity.
-	 */
-	@OperationId("Validate custom fields")
-	@Post("/validate")
-	@SuccessResponse(200, "Returns validation result")
-	@DescribeAction("resolve/validate")
-	@ValidateFuncArgs(ResolveCustomFieldValidateValidator)
-	async validateCustomFields(
-		@Queries() query: {},
-		@Body() body: ResolveCustomFieldValidateBodyInterface
-	): Promise<ResolveCustomFieldValidateResponseInterface> {
-		return this.customFieldService.validate(body.entity, body.data, body.orgId, false);
 	}
 }

@@ -16,6 +16,8 @@ import { CustomFieldAttributes } from "../../../database/models/custom-field";
 import { CustomFieldCreateBodyInterface } from "../../interfaces/custom-field-create-body.interface";
 import { CustomFieldSearchParamsInterface } from "../../interfaces/custom-field-search-params.interface";
 import { CustomFieldUpdateBodyInterface } from "../../interfaces/custom-field-update-body.interface";
+import { CustomFieldValidateBodyInterface } from "../../interfaces/custom-field-validate-body.interface";
+import { CustomFieldValidateResponseInterface } from "../../interfaces/custom-field-validate-response.interface";
 import { CustomFieldRepository } from "../../modules/custom-fields/custom-field.repository";
 import { CustomFieldService } from "../../modules/custom-fields/custom-field.service";
 import { CustomFieldSearchParamsValidator } from "../../validators/custom-field-search-params.validator";
@@ -23,6 +25,7 @@ import { CustomFieldCreateParamsValidator } from "../../validators/custom-field-
 import { CustomFieldUpdateParamsValidator } from "../../validators/custom-field-update-params.validator";
 import { CustomFieldReadParamsValidator } from "../../validators/custom-field-read-params.validator";
 import { CustomFieldDeleteParamsValidator } from "../../validators/custom-field-delete-params.validator";
+import { CustomFieldValidateValidator } from "../../validators/custom-field-validate.validator";
 
 const publicCustomFieldAttributes = [
 	"id",
@@ -79,6 +82,21 @@ export class CustomFieldsController extends BaseController {
 			})),
 			...result,
 		};
+	}
+
+	/**
+	 * Validate custom field payload for entity.
+	 */
+	@OperationId("Validate custom fields")
+	@Post("/validate")
+	@SuccessResponse(200, "Returns validation result")
+	@DescribeAction("custom-fields/validate")
+	@ValidateFuncArgs(CustomFieldValidateValidator)
+	async validateCustomFields(
+		@Queries() query: {},
+		@Body() body: CustomFieldValidateBodyInterface
+	): Promise<CustomFieldValidateResponseInterface> {
+		return this.customFieldService.validate(body.entity, body.data, body.orgId, false);
 	}
 
 	/**
