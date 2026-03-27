@@ -2,12 +2,12 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
-describe("POST /api/v1/device-custom-fields", () => {
+describe("POST /api/v1/custom-fields", () => {
 	const { server, context } = initTest();
 	const orgId = Math.floor(Math.random() * 1000000) + 1;
 
-	it("Should create device custom field", async () => {
-		const { statusCode, body } = await server.post("/v1/device-custom-fields").send({
+	it("Should create custom field", async () => {
+		const { statusCode, body } = await server.post("/v1/custom-fields").send({
 			orgId,
 			region: "us",
 			entity: "Device",
@@ -31,11 +31,11 @@ describe("POST /api/v1/device-custom-fields", () => {
 		assert.equal(body.schema.min, 2);
 		assert.equal(body.status, "active");
 		assert.isString(body.arn);
-		context["deviceCustomFieldId"] = body.id;
+		context["customFieldId"] = body.id;
 	});
 
 	it("Should return validation error", async () => {
-		const { statusCode, body } = await server.post("/v1/device-custom-fields").send({
+		const { statusCode, body } = await server.post("/v1/custom-fields").send({
 			orgId: "org",
 			region: "u",
 			entity: 1,

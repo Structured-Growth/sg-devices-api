@@ -12,7 +12,7 @@ import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { Transaction } from "sequelize";
 import { isUndefined, omitBy } from "lodash";
-import { DeviceCustomFieldService } from "../device-custom-fields/device-custom-field.service";
+import { CustomFieldService } from "../custom-fields/custom-field.service";
 
 @autoInjectable()
 export class DevicesRepository
@@ -20,7 +20,7 @@ export class DevicesRepository
 {
 	private i18n: I18nType;
 	constructor(
-		@inject("DeviceCustomFieldService") private deviceCustomFieldService: DeviceCustomFieldService,
+		@inject("CustomFieldService") private customFieldService: CustomFieldService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
@@ -164,7 +164,7 @@ export class DevicesRepository
 	}
 
 	private async validateMetadata(data: Record<string, unknown>, orgId: number): Promise<void> {
-		const { valid, errors } = await this.deviceCustomFieldService.validate("Device", data || {}, orgId, false);
+		const { valid, errors } = await this.customFieldService.validate("Device", data || {}, orgId, false);
 
 		if (!valid) {
 			throw new ValidationError({

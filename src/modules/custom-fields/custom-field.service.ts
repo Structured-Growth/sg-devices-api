@@ -10,27 +10,27 @@ import {
 	signedInternalFetch,
 } from "@structured-growth/microservice-sdk";
 import { Op } from "sequelize";
-import DeviceCustomField from "../../../database/models/device-custom-field";
-import { DeviceCustomFieldSearchParamsInterface } from "../../interfaces/device-custom-field-search-params.interface";
-import { DeviceCustomFieldRepository } from "./device-custom-field.repository";
+import CustomField from "../../../database/models/custom-field";
+import { CustomFieldSearchParamsInterface } from "../../interfaces/custom-field-search-params.interface";
+import { CustomFieldRepository } from "./custom-field.repository";
 
 const ORGANIZATION_PARENTS_CACHE_TTL_SEC = 60 * 60 * 24 * 30;
-const ORGANIZATION_PARENTS_CACHE_TAG = "device-custom-fields:organization-parents";
+const ORGANIZATION_PARENTS_CACHE_TAG = "custom-fields:organization-parents";
 
 @autoInjectable()
-export class DeviceCustomFieldService {
+export class CustomFieldService {
 	constructor(
-		@inject("DeviceCustomFieldRepository") private deviceCustomFieldRepository: DeviceCustomFieldRepository,
+		@inject("CustomFieldRepository") private customFieldRepository: CustomFieldRepository,
 		@inject("CacheService") private cacheService: CacheService
 	) {}
 
 	public async search(
-		params: DeviceCustomFieldSearchParamsInterface
-	): Promise<SearchResultInterface<DeviceCustomField>> {
+		params: CustomFieldSearchParamsInterface
+	): Promise<SearchResultInterface<CustomField>> {
 		const includeInherited = params.includeInherited !== false;
 		const parentOrganizationIds = includeInherited ? await this.getParentOrganizationIds(params.orgId) : [];
 
-		return this.deviceCustomFieldRepository.search({
+		return this.customFieldRepository.search({
 			...params,
 			orgId: [params.orgId, ...parentOrganizationIds],
 		});
@@ -46,7 +46,7 @@ export class DeviceCustomFieldService {
 		message?: string;
 		errors?: object;
 	}> {
-		const deviceCustomFields = await DeviceCustomField.findAll({
+		const customFields = await CustomField.findAll({
 			where: {
 				entity: entityName,
 				orgId: {
@@ -55,7 +55,7 @@ export class DeviceCustomFieldService {
 			},
 		});
 		const validator = joi.object(
-			deviceCustomFields.reduce((acc, item) => {
+			customFields.reduce((acc, item) => {
 				acc[item.name] = joi.build(item.schema);
 				return acc;
 			}, {})

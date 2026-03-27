@@ -7,23 +7,23 @@ import {
 	NotFoundError,
 	I18nType,
 } from "@structured-growth/microservice-sdk";
-import DeviceCustomField, {
-	DeviceCustomFieldCreationAttributes,
-} from "../../../database/models/device-custom-field";
-import { DeviceCustomFieldSearchParamsInterface } from "../../interfaces/device-custom-field-search-params.interface";
-import { DeviceCustomFieldUpdateBodyInterface } from "../../interfaces/device-custom-field-update-body.interface";
+import CustomField, {
+	CustomFieldCreationAttributes,
+} from "../../../database/models/custom-field";
+import { CustomFieldSearchParamsInterface } from "../../interfaces/custom-field-search-params.interface";
+import { CustomFieldUpdateBodyInterface } from "../../interfaces/custom-field-update-body.interface";
 
-type DeviceCustomFieldRepositorySearchParams = Omit<DeviceCustomFieldSearchParamsInterface, "includeInherited" | "orgId"> & {
+type CustomFieldRepositorySearchParams = Omit<CustomFieldSearchParamsInterface, "includeInherited" | "orgId"> & {
 	orgId: number[];
 };
 
 @autoInjectable()
-export class DeviceCustomFieldRepository
+export class CustomFieldRepository
 	implements
 		RepositoryInterface<
-			DeviceCustomField,
-			DeviceCustomFieldRepositorySearchParams,
-			DeviceCustomFieldCreationAttributes
+			CustomField,
+			CustomFieldRepositorySearchParams,
+			CustomFieldCreationAttributes
 		>
 {
 	private i18n: I18nType;
@@ -33,8 +33,8 @@ export class DeviceCustomFieldRepository
 	}
 
 	public async search(
-		params: DeviceCustomFieldRepositorySearchParams
-	): Promise<SearchResultInterface<DeviceCustomField>> {
+		params: CustomFieldRepositorySearchParams
+	): Promise<SearchResultInterface<CustomField>> {
 		const page = params.page || 1;
 		const limit = params.limit || 20;
 		const offset = (page - 1) * limit;
@@ -58,7 +58,7 @@ export class DeviceCustomFieldRepository
 			};
 		}
 
-		const { rows, count } = await DeviceCustomField.findAndCountAll({
+		const { rows, count } = await CustomField.findAndCountAll({
 			where,
 			offset,
 			limit,
@@ -73,8 +73,8 @@ export class DeviceCustomFieldRepository
 		};
 	}
 
-	public async create(params: DeviceCustomFieldCreationAttributes): Promise<DeviceCustomField> {
-		return DeviceCustomField.create(params);
+	public async create(params: CustomFieldCreationAttributes): Promise<CustomField> {
+		return CustomField.create(params);
 	}
 
 	public async read(
@@ -82,14 +82,14 @@ export class DeviceCustomFieldRepository
 		params?: {
 			attributes?: string[];
 		}
-	): Promise<DeviceCustomField | null> {
-		return DeviceCustomField.findByPk(id, {
+	): Promise<CustomField | null> {
+		return CustomField.findByPk(id, {
 			attributes: params?.attributes,
 			rejectOnEmpty: false,
 		});
 	}
 
-	public async update(id: number, params: DeviceCustomFieldUpdateBodyInterface): Promise<DeviceCustomField> {
+	public async update(id: number, params: CustomFieldUpdateBodyInterface): Promise<CustomField> {
 		const model = await this.read(id);
 
 		if (!model) {
@@ -103,7 +103,7 @@ export class DeviceCustomFieldRepository
 	}
 
 	public async delete(id: number): Promise<void> {
-		const n = await DeviceCustomField.destroy({ where: { id } });
+		const n = await CustomField.destroy({ where: { id } });
 
 		if (n === 0) {
 			throw new NotFoundError(

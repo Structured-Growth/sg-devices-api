@@ -16,8 +16,8 @@ import {
 	AuthService,
 } from "@structured-growth/microservice-sdk";
 import { loadEnvironment } from "./load-environment";
-import { DeviceCustomFieldRepository } from "../modules/device-custom-fields/device-custom-field.repository";
-import { DeviceCustomFieldService } from "../modules/device-custom-fields/device-custom-field.service";
+import { CustomFieldRepository } from "../modules/custom-fields/custom-field.repository";
+import { CustomFieldService } from "../modules/custom-fields/custom-field.service";
 import { DevicesRepository } from "../modules/devices/devices.repository";
 import { DevicesService } from "../modules/devices/devices.service";
 
@@ -42,11 +42,11 @@ container.register("CacheTransport", cacheTransports[process.env.CACHE_TRANSPORT
 	lifecycle: Lifecycle.Singleton,
 });
 container.register("CacheService", CacheService, { lifecycle: Lifecycle.Singleton });
-container.register("DeviceCustomFieldService", DeviceCustomFieldService);
+container.register("CustomFieldService", CustomFieldService);
 container.register("DevicesService", DevicesService);
 
 // repositories
-container.register("DeviceCustomFieldRepository", DeviceCustomFieldRepository);
+container.register("CustomFieldRepository", CustomFieldRepository);
 container.register("DevicesRepository", DevicesRepository);
 
 container.register("Logger", Logger);

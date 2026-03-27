@@ -3,10 +3,10 @@ import { assert } from "chai";
 import { App } from "../src/app/app";
 import { container, NotFoundError } from "@structured-growth/microservice-sdk";
 import { ResolverController } from "../src/controllers/v1";
-import { DeviceCustomFieldService } from "../src/modules/device-custom-fields/device-custom-field.service";
+import { CustomFieldService } from "../src/modules/custom-fields/custom-field.service";
 
 describe("Test resolver", () => {
-	const controller = new ResolverController(container.resolve<DeviceCustomFieldService>("DeviceCustomFieldService"));
+	const controller = new ResolverController(container.resolve<CustomFieldService>("CustomFieldService"));
 	const app = container.resolve<App>("App");
 
 	before(async () => app.ready);

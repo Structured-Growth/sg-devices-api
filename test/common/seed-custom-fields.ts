@@ -1,7 +1,7 @@
 import { joi, RegionEnum } from "@structured-growth/microservice-sdk";
-import DeviceCustomField from "../../database/models/device-custom-field";
+import CustomField from "../../database/models/custom-field";
 
-export async function seedDeviceCustomFields(orgId: number): Promise<void> {
+export async function seedCustomFields(orgId: number): Promise<void> {
 	const fields = [
 		{ name: "a", title: "A", schema: joi.number().describe() },
 		{ name: "b", title: "B", schema: joi.number().describe() },
@@ -11,7 +11,7 @@ export async function seedDeviceCustomFields(orgId: number): Promise<void> {
 	];
 
 	for (const field of fields) {
-		await DeviceCustomField.create({
+		await CustomField.create({
 			orgId,
 			region: RegionEnum.US,
 			entity: "Device",

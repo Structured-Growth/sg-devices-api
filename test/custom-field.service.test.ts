@@ -2,10 +2,10 @@ import "reflect-metadata";
 import { assert } from "chai";
 import { ValidationError, joi, container } from "@structured-growth/microservice-sdk";
 import { Op } from "sequelize";
-import DeviceCustomField from "../database/models/device-custom-field";
-import { DeviceCustomFieldService } from "../src/modules/device-custom-fields/device-custom-field.service";
+import CustomField from "../database/models/custom-field";
+import { CustomFieldService } from "../src/modules/custom-fields/custom-field.service";
 
-describe("DeviceCustomFieldService", () => {
+describe("CustomFieldService", () => {
 	let searchParams: Record<string, unknown> | undefined;
 	const repository = {
 		async search(params: Record<string, unknown>) {
@@ -27,7 +27,7 @@ describe("DeviceCustomFieldService", () => {
 		},
 	} as any;
 
-	const service = new DeviceCustomFieldService(repository, cache);
+	const service = new CustomFieldService(repository, cache);
 	const originalTranslateApiUrl = process.env.TRANSLATE_API_URL;
 	const originalTranslateApiClientId = process.env.TRANSLATE_API_CLIENT_ID;
 	const originalAccountApiUrl = process.env.ACCOUNT_API_URL;
@@ -52,7 +52,7 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	afterEach(() => {
-		delete (DeviceCustomField as any).findAll;
+		delete (CustomField as any).findAll;
 		global.fetch = originalFetch;
 		searchParams = undefined;
 		cache.get = async () => [];
@@ -71,11 +71,11 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	it("search uses cached parent organizations when includeInherited is true", async () => {
-		const serviceWithCachedParents = new DeviceCustomFieldService(
+		const serviceWithCachedParents = new CustomFieldService(
 			repository,
 			{
 				async get(key: string) {
-					assert.equal(key, "device-custom-fields:organization-parents:55");
+					assert.equal(key, "custom-fields:organization-parents:55");
 					return [11, 12];
 				},
 				async setWithTags() {
@@ -99,7 +99,7 @@ describe("DeviceCustomFieldService", () => {
 		let cachedTags: string[] | undefined;
 		let cachedTtl: number | undefined;
 
-		const serviceWithFetch = new DeviceCustomFieldService(
+		const serviceWithFetch = new CustomFieldService(
 			repository,
 			{
 				async get() {
@@ -138,17 +138,17 @@ describe("DeviceCustomFieldService", () => {
 		});
 
 		assert.deepEqual(searchParams?.orgId, [55, 11, 12]);
-		assert.equal(cachedKey, "device-custom-fields:organization-parents:55");
+		assert.equal(cachedKey, "custom-fields:organization-parents:55");
 		assert.deepEqual(cachedValue, [11, 12]);
 		assert.deepEqual(cachedTags, [
-			"device-custom-fields:organization-parents",
-			"device-custom-fields:organization-parents:55",
+			"custom-fields:organization-parents",
+			"custom-fields:organization-parents:55",
 		]);
 		assert.equal(cachedTtl, 60 * 60 * 24 * 30);
 	});
 
 	it("validate returns valid when no custom fields found", async () => {
-		(DeviceCustomField as any).findAll = async (params: Record<string, any>) => {
+		(CustomField as any).findAll = async (params: Record<string, any>) => {
 			assert.deepEqual(params.where.orgId[Op.or], [101]);
 			return [];
 		};
@@ -161,11 +161,11 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	it("validate includes inherited parent organizations from cache", async () => {
-		const serviceWithCachedParents = new DeviceCustomFieldService(
+		const serviceWithCachedParents = new CustomFieldService(
 			repository,
 			{
 				async get(key: string) {
-					assert.equal(key, "device-custom-fields:organization-parents:101");
+					assert.equal(key, "custom-fields:organization-parents:101");
 					return [11, 12];
 				},
 				async setWithTags() {
@@ -174,7 +174,7 @@ describe("DeviceCustomFieldService", () => {
 			} as any
 		);
 
-		(DeviceCustomField as any).findAll = async (params: Record<string, any>) => {
+		(CustomField as any).findAll = async (params: Record<string, any>) => {
 			assert.deepEqual(params.where.orgId[Op.or], [101, 11, 12]);
 			return [];
 		};
@@ -185,7 +185,7 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	it("validate returns success for valid metadata", async () => {
-		(DeviceCustomField as any).findAll = async () => [
+		(CustomField as any).findAll = async () => [
 			{
 				name: "calCode",
 				schema: joi.string().min(2).describe(),
@@ -204,7 +204,7 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	it("validate returns errors without throwing when throwError is false", async () => {
-		(DeviceCustomField as any).findAll = async () => [
+		(CustomField as any).findAll = async () => [
 			{
 				name: "calCode",
 				schema: joi.string().min(3).describe(),
@@ -225,7 +225,7 @@ describe("DeviceCustomFieldService", () => {
 	});
 
 	it("validate throws ValidationError for invalid metadata by default", async () => {
-		(DeviceCustomField as any).findAll = async () => [
+		(CustomField as any).findAll = async () => [
 			{
 				name: "calCode",
 				schema: joi.string().min(3).describe(),

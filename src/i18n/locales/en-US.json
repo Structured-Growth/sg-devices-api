@@ -59,7 +59,7 @@
 			"q": "Query",
 			"metadata": "Metadata"
     },
-		"deviceCustomFields": {
+		"customFields": {
 			"orgId": "Organization Id",
 			"region": "Region",
 			"entity": "Entity",
@@ -67,7 +67,7 @@
 			"name": "Name",
 			"schema": "Schema",
 			"status": "Status",
-			"deviceCustomFieldId": "Device custom field Id",
+			"customFieldId": "Custom field Id",
 			"includeInherited": "Include inherited"
     }
   }

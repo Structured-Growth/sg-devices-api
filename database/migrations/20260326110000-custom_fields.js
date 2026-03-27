@@ -8,7 +8,7 @@ module.exports = {
 		await queryInterface.createTable(
 			{
 				schema: process.env.DB_SCHEMA,
-				tableName: "device_custom_fields",
+				tableName: "custom_fields",
 			},
 			{
 				id: {
@@ -54,7 +54,7 @@ module.exports = {
 	async down(queryInterface) {
 		await queryInterface.dropTable({
 			schema: process.env.DB_SCHEMA,
-			tableName: "device_custom_fields",
+			tableName: "custom_fields",
 		});
 	},
 };

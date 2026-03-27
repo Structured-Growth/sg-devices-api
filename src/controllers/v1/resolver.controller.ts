@@ -15,13 +15,13 @@ import { ResolveModelsResponseInterface } from "../../interfaces/resolve-models-
 import { ResolveCustomFieldValidateBodyInterface } from "../../interfaces/resolve-custom-field-validate-body.interface";
 import { ResolveCustomFieldValidateResponseInterface } from "../../interfaces/resolve-custom-field-validate-response.interface";
 import { ResolveCustomFieldValidateValidator } from "../../validators/resolve-custom-field-validate.validator";
-import { DeviceCustomFieldService } from "../../modules/device-custom-fields/device-custom-field.service";
+import { CustomFieldService } from "../../modules/custom-fields/custom-field.service";
 
 @Route("v1/resolver")
 @Tags("ResolverController")
 @autoInjectable()
 export class ResolverController extends BaseController {
-	constructor(@inject("DeviceCustomFieldService") private deviceCustomFieldService: DeviceCustomFieldService) {
+	constructor(@inject("CustomFieldService") private customFieldService: CustomFieldService) {
 		super();
 	}
 
@@ -124,6 +124,6 @@ export class ResolverController extends BaseController {
 		@Queries() query: {},
 		@Body() body: ResolveCustomFieldValidateBodyInterface
 	): Promise<ResolveCustomFieldValidateResponseInterface> {
-		return this.deviceCustomFieldService.validate(body.entity, body.data, body.orgId, false);
+		return this.customFieldService.validate(body.entity, body.data, body.orgId, false);
 	}
 }

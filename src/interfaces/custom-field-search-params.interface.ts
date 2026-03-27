@@ -1,12 +1,12 @@
 import { DefaultSearchParamsInterface } from "@structured-growth/microservice-sdk";
-import { DeviceCustomFieldAttributes } from "../../database/models/device-custom-field";
+import { CustomFieldAttributes } from "../../database/models/custom-field";
 
-export interface DeviceCustomFieldSearchParamsInterface
+export interface CustomFieldSearchParamsInterface
 	extends Omit<DefaultSearchParamsInterface, "orgId" | "accountId"> {
 	orgId: number;
 	accountId?: number;
 	entity?: string[];
-	status?: DeviceCustomFieldAttributes["status"][];
+	status?: CustomFieldAttributes["status"][];
 	title?: string[];
 	name?: string[];
 	includeInherited?: boolean;

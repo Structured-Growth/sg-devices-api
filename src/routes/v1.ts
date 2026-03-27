@@ -34,12 +34,12 @@ router.get(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.Devic
 router.put(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "update", handlerOpts));
 router.delete(pathPrefix + '/v1/devices/:deviceId', handleRequest(Controllers.DevicesController, "delete", handlerOpts));
 
-//DeviceCustomFieldsController
-router.get(pathPrefix + '/v1/device-custom-fields', handleRequest(Controllers.DeviceCustomFieldsController, "search", handlerOpts));
-router.post(pathPrefix + '/v1/device-custom-fields', handleRequest(Controllers.DeviceCustomFieldsController, "create", handlerOpts));
-router.get(pathPrefix + '/v1/device-custom-fields/:deviceCustomFieldId', handleRequest(Controllers.DeviceCustomFieldsController, "get", handlerOpts));
-router.put(pathPrefix + '/v1/device-custom-fields/:deviceCustomFieldId', handleRequest(Controllers.DeviceCustomFieldsController, "update", handlerOpts));
-router.delete(pathPrefix + '/v1/device-custom-fields/:deviceCustomFieldId', handleRequest(Controllers.DeviceCustomFieldsController, "delete", handlerOpts));
+//CustomFieldsController
+router.get(pathPrefix + '/v1/custom-fields', handleRequest(Controllers.CustomFieldsController, "search", handlerOpts));
+router.post(pathPrefix + '/v1/custom-fields', handleRequest(Controllers.CustomFieldsController, "create", handlerOpts));
+router.get(pathPrefix + '/v1/custom-fields/:customFieldId', handleRequest(Controllers.CustomFieldsController, "get", handlerOpts));
+router.put(pathPrefix + '/v1/custom-fields/:customFieldId', handleRequest(Controllers.CustomFieldsController, "update", handlerOpts));
+router.delete(pathPrefix + '/v1/custom-fields/:customFieldId', handleRequest(Controllers.CustomFieldsController, "delete", handlerOpts));
 
 //DocsController
 router.get(pathPrefix + '/v1/docs/swagger.json', handleRequest(Controllers.DocsController, "getSwagger", handlerOpts));
@@ -64,11 +64,11 @@ export const actionToRouteMap = {
 	"DevicesController.get": 'get /v1/devices/:deviceId',
 	"DevicesController.update": 'put /v1/devices/:deviceId',
 	"DevicesController.delete": 'delete /v1/devices/:deviceId',
-	"DeviceCustomFieldsController.search": 'get /v1/device-custom-fields',
-	"DeviceCustomFieldsController.create": 'post /v1/device-custom-fields',
-	"DeviceCustomFieldsController.get": 'get /v1/device-custom-fields/:deviceCustomFieldId',
-	"DeviceCustomFieldsController.update": 'put /v1/device-custom-fields/:deviceCustomFieldId',
-	"DeviceCustomFieldsController.delete": 'delete /v1/device-custom-fields/:deviceCustomFieldId',
+	"CustomFieldsController.search": 'get /v1/custom-fields',
+	"CustomFieldsController.create": 'post /v1/custom-fields',
+	"CustomFieldsController.get": 'get /v1/custom-fields/:customFieldId',
+	"CustomFieldsController.update": 'put /v1/custom-fields/:customFieldId',
+	"CustomFieldsController.delete": 'delete /v1/custom-fields/:customFieldId',
 	"DocsController.getSwagger": 'get /v1/docs/swagger.json',
 	"ResolverController.resolve": 'get /v1/resolver/resolve',
 	"ResolverController.actions": 'get /v1/resolver/actions',

@@ -2,12 +2,12 @@ import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
 
-describe("GET /api/v1/device-custom-fields/:deviceCustomFieldId", () => {
+describe("GET /api/v1/custom-fields/:customFieldId", () => {
 	const { server, context } = initTest();
 	const orgId = Math.floor(Math.random() * 1000000) + 1;
 
-	it("Should create device custom field", async () => {
-		const { statusCode, body } = await server.post("/v1/device-custom-fields").send({
+	it("Should create custom field", async () => {
+		const { statusCode, body } = await server.post("/v1/custom-fields").send({
 			orgId,
 			region: "us",
 			entity: "Device",
@@ -20,13 +20,13 @@ describe("GET /api/v1/device-custom-fields/:deviceCustomFieldId", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		context["deviceCustomFieldId"] = body.id;
+		context["customFieldId"] = body.id;
 	});
 
-	it("Should read device custom field", async () => {
-		const { statusCode, body } = await server.get(`/v1/device-custom-fields/${context.deviceCustomFieldId}`);
+	it("Should read custom field", async () => {
+		const { statusCode, body } = await server.get(`/v1/custom-fields/${context.customFieldId}`);
 		assert.equal(statusCode, 200);
-		assert.equal(body.id, context.deviceCustomFieldId);
+		assert.equal(body.id, context.customFieldId);
 		assert.equal(body.orgId, orgId);
 		assert.equal(body.region, "us");
 		assert.equal(body.entity, "Device");
@@ -39,8 +39,8 @@ describe("GET /api/v1/device-custom-fields/:deviceCustomFieldId", () => {
 		assert.isString(body.arn);
 	});
 
-	it("Should return if device custom field does not exist", async () => {
-		const { statusCode, body } = await server.get("/v1/device-custom-fields/999999").send({});
+	it("Should return if custom field does not exist", async () => {
+		const { statusCode, body } = await server.get("/v1/custom-fields/999999").send({});
 		assert.equal(statusCode, 404);
 		assert.equal(body.name, "NotFound");
 		assert.isString(body.message);

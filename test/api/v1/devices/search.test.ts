@@ -1,14 +1,14 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
-import { seedDeviceCustomFields } from "../../../common/seed-device-custom-fields";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/devices", () => {
 	const { server, context } = initTest();
 	const orgId = Math.floor(Math.random() * 1000000) + 1;
 
 	beforeEach(() => {
-		return seedDeviceCustomFields(orgId);
+		return seedCustomFields(orgId);
 	});
 
 	it("Should create device", async () => {
