@@ -5,34 +5,28 @@ import {
 	validate,
 	ValidationError,
 	SearchResultInterface,
-	CacheService,
-	ServerError,
-	signedInternalFetch,
 } from "@structured-growth/microservice-sdk";
 import { Op } from "sequelize";
 import CustomField from "../../../database/models/custom-field";
 import { CustomFieldSearchParamsInterface } from "../../interfaces/custom-field-search-params.interface";
 import { CustomFieldRepository } from "./custom-field.repository";
 
-const ORGANIZATION_PARENTS_CACHE_TTL_SEC = 60 * 60 * 24 * 30;
-const ORGANIZATION_PARENTS_CACHE_TAG = "custom-fields:organization-parents";
-
 @autoInjectable()
 export class CustomFieldService {
-	constructor(
-		@inject("CustomFieldRepository") private customFieldRepository: CustomFieldRepository,
-		@inject("CacheService") private cacheService: CacheService
-	) {}
+	constructor(@inject("CustomFieldRepository") private customFieldRepository: CustomFieldRepository) {}
 
 	public async search(
-		params: CustomFieldSearchParamsInterface
+		params: CustomFieldSearchParamsInterface,
+		inheritedOrgIds: number[] = []
 	): Promise<SearchResultInterface<CustomField>> {
-		const includeInherited = params.includeInherited !== false;
-		const parentOrganizationIds = includeInherited ? await this.getParentOrganizationIds(params.orgId) : [];
+		const orgIds =
+			params.includeInherited === false
+				? [params.orgId]
+				: [params.orgId, ...this.normalizeInheritedOrgIds(params.orgId, inheritedOrgIds)];
 
 		return this.customFieldRepository.search({
 			...params,
-			orgId: [params.orgId, ...parentOrganizationIds],
+			orgId: orgIds,
 		});
 	}
 
@@ -40,6 +34,7 @@ export class CustomFieldService {
 		entityName: string,
 		data: Record<string, unknown>,
 		orgId: number,
+		inheritedOrgIds: number[] = [],
 		throwError = true
 	): Promise<{
 		valid: boolean;
@@ -50,7 +45,7 @@ export class CustomFieldService {
 			where: {
 				entity: entityName,
 				orgId: {
-					[Op.or]: [orgId, ...(await this.getParentOrganizationIds(orgId))],
+					[Op.or]: [orgId, ...this.normalizeInheritedOrgIds(orgId, inheritedOrgIds)],
 				},
 			},
 		});
@@ -74,37 +69,23 @@ export class CustomFieldService {
 		return { valid, message, errors };
 	}
 
-	private async getParentOrganizationIds(orgId: number): Promise<number[]> {
-		const cacheKey = `${ORGANIZATION_PARENTS_CACHE_TAG}:${orgId}`;
-		const cached = await this.cacheService.get<number[]>(cacheKey);
-
-		if (cached !== null) {
-			return cached;
+	private normalizeInheritedOrgIds(orgId: number, inheritedOrgIds: number[]): number[] {
+		if (!Array.isArray(inheritedOrgIds)) {
+			return [];
 		}
 
-		const response = await signedInternalFetch(`${process.env.ACCOUNT_API_URL}/v1/organizations/${orgId}/parents`, {
-			method: "GET",
-			headers: {
-				"Content-Type": "application/json",
-			},
-		});
+		const normalizedOrgIds = new Set<number>();
 
-		if (!response.ok) {
-			throw new ServerError(`Failed to fetch parent organizations. Status: ${response.status}`);
+		for (const inheritedOrgId of inheritedOrgIds) {
+			const normalizedOrgId = Number(inheritedOrgId);
+
+			if (!Number.isInteger(normalizedOrgId) || normalizedOrgId <= 0 || normalizedOrgId === orgId) {
+				continue;
+			}
+
+			normalizedOrgIds.add(normalizedOrgId);
 		}
 
-		const payload = await response.json();
-		const parentOrganizationIds = Array.isArray(payload)
-			? payload.map((item) => Number(item?.id)).filter((id) => Number.isInteger(id) && id > 0)
-			: [];
-
-		await this.cacheService.setWithTags(
-			cacheKey,
-			parentOrganizationIds,
-			[ORGANIZATION_PARENTS_CACHE_TAG, `${ORGANIZATION_PARENTS_CACHE_TAG}:${orgId}`],
-			ORGANIZATION_PARENTS_CACHE_TTL_SEC
-		);
-
-		return parentOrganizationIds;
+		return Array.from(normalizedOrgIds);
 	}
 }

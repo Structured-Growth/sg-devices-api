@@ -1,10 +1,7 @@
 import { DefaultSearchParamsInterface } from "@structured-growth/microservice-sdk";
 import { CustomFieldAttributes } from "../../database/models/custom-field";
 
-export interface CustomFieldSearchParamsInterface
-	extends Omit<DefaultSearchParamsInterface, "orgId" | "accountId"> {
-	orgId: number;
-	accountId?: number;
+export interface CustomFieldSearchParamsInterface extends Omit<DefaultSearchParamsInterface, "accountId"> {
 	entity?: string[];
 	status?: CustomFieldAttributes["status"][];
 	title?: string[];

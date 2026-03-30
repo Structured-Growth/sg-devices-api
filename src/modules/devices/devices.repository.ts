@@ -6,23 +6,18 @@ import {
 	NotFoundError,
 	I18nType,
 	inject,
-	ValidationError,
 } from "@structured-growth/microservice-sdk";
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { Transaction } from "sequelize";
 import { isUndefined, omitBy } from "lodash";
-import { CustomFieldService } from "../custom-fields/custom-field.service";
 
 @autoInjectable()
 export class DevicesRepository
 	implements RepositoryInterface<Device, DeviceSearchParamsInterface, DeviceCreationAttributes>
 {
 	private i18n: I18nType;
-	constructor(
-		@inject("CustomFieldService") private customFieldService: CustomFieldService,
-		@inject("i18n") private getI18n: () => I18nType
-	) {
+	constructor(@inject("i18n") private getI18n: () => I18nType) {
 		this.i18n = this.getI18n();
 	}
 	public async search(params: DeviceSearchParamsInterface): Promise<SearchResultInterface<Device>> {
@@ -128,7 +123,6 @@ export class DevicesRepository
 	}
 
 	public async create(params: DeviceCreationAttributes, transaction?: Transaction): Promise<Device> {
-		await this.validateMetadata(params.metadata, params.orgId);
 		return Device.create(params, { transaction });
 	}
 
@@ -150,7 +144,6 @@ export class DevicesRepository
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 		device.setAttributes(omitBy(params, isUndefined));
-		await this.validateMetadata(device.toJSON().metadata, device.orgId);
 
 		return device.save();
 	}
@@ -160,18 +153,6 @@ export class DevicesRepository
 
 		if (n === 0) {
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
-		}
-	}
-
-	private async validateMetadata(data: Record<string, unknown>, orgId: number): Promise<void> {
-		const { valid, errors } = await this.customFieldService.validate("Device", data || {}, orgId, false);
-
-		if (!valid) {
-			throw new ValidationError({
-				body: {
-					metadata: errors,
-				},
-			});
 		}
 	}
 }

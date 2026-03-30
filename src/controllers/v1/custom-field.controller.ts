@@ -48,6 +48,7 @@ type PublicCustomFieldAttributes = Pick<CustomFieldAttributes, CustomFieldKeys>;
 @autoInjectable()
 export class CustomFieldsController extends BaseController {
 	private i18n: I18nType;
+
 	constructor(
 		@inject("CustomFieldRepository") private customFieldRepository: CustomFieldRepository,
 		@inject("CustomFieldService") private customFieldService: CustomFieldService,
@@ -70,10 +71,13 @@ export class CustomFieldsController extends BaseController {
 	async search(
 		@Queries() query: CustomFieldSearchParamsInterface
 	): Promise<SearchResultInterface<PublicCustomFieldAttributes>> {
-		const { data, ...result } = await this.customFieldService.search({
-			...query,
-			includeInherited: query.includeInherited?.toString() !== "false",
-		});
+		const { data, ...result } = await this.customFieldService.search(
+			{
+				...query,
+				includeInherited: query.includeInherited?.toString() !== "false",
+			},
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+		);
 
 		return {
 			data: data.map((customField) => ({
@@ -90,13 +94,20 @@ export class CustomFieldsController extends BaseController {
 	@OperationId("Validate custom fields")
 	@Post("/validate")
 	@SuccessResponse(200, "Returns validation result")
+	@DescribeResource("Organization", ({ body }) => [Number(body.orgId)])
 	@DescribeAction("custom-fields/validate")
 	@ValidateFuncArgs(CustomFieldValidateValidator)
 	async validateCustomFields(
 		@Queries() query: {},
 		@Body() body: CustomFieldValidateBodyInterface
 	): Promise<CustomFieldValidateResponseInterface> {
-		return this.customFieldService.validate(body.entity, body.data, body.orgId, false);
+		return this.customFieldService.validate(
+			body.entity,
+			body.data,
+			body.orgId,
+			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : [],
+			false
+		);
 	}
 
 	/**

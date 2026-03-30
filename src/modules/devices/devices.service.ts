@@ -1,4 +1,4 @@
-import { autoInjectable, inject, ValidationError, I18nType } from "@structured-growth/microservice-sdk";
+import { autoInjectable, inject, ValidationError, I18nType, NotFoundError } from "@structured-growth/microservice-sdk";
 import { DevicesRepository } from "./devices.repository";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
 import Device from "../../../database/models/device";
@@ -14,15 +14,41 @@ import {
 	validateCell,
 	asTrimmedString,
 } from "../../helpers/device-upload-csv";
+import { DeviceUpdateBodyInterface } from "../../interfaces/device-update-body.interface";
+import { CustomFieldService } from "../custom-fields/custom-field.service";
 
 @autoInjectable()
 export class DevicesService {
 	private i18n: I18nType;
 	constructor(
 		@inject("DevicesRepository") private devicesRepository: DevicesRepository,
+		@inject("CustomFieldService") private customFieldService: CustomFieldService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
+	}
+
+	public async create(params: DeviceCreateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
+		await this.validateMetadata(params.metadata, params.orgId, inheritedOrgIds);
+
+		return this.devicesRepository.create(params);
+	}
+
+	public async update(id: number, params: DeviceUpdateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
+		const device = await this.devicesRepository.read(id);
+
+		if (!device) {
+			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
+		}
+
+		const nextDevice = {
+			...device.toJSON(),
+			...params,
+		};
+
+		await this.validateMetadata(nextDevice.metadata, nextDevice.orgId, inheritedOrgIds);
+
+		return this.devicesRepository.update(id, params);
 	}
 
 	public async importFromCsv(buffer: Buffer, defaults: { orgId: number; region: string }): Promise<Device[]> {
@@ -58,7 +84,11 @@ export class DevicesService {
 		return await this.bulk(devices);
 	}
 
-	public async bulk(devices: DeviceCreateBodyInterface[]): Promise<Device[]> {
+	public async bulk(devices: DeviceCreateBodyInterface[], inheritedOrgIds: number[] = []): Promise<Device[]> {
+		for (const device of devices) {
+			await this.validateMetadata(device.metadata, device.orgId, inheritedOrgIds);
+		}
+
 		return await Device.sequelize.transaction(async (transaction) => {
 			return await this.createAll(devices, transaction);
 		});
@@ -252,6 +282,24 @@ export class DevicesService {
 		if (existingSerials.size > 0) {
 			const conflictList = [...existingSerials].join(", ");
 			throw new ValidationError({}, this.i18n.__("error.device.serial_exists") + `: ${conflictList}`);
+		}
+	}
+
+	private async validateMetadata(data: Record<string, unknown>, orgId: number, inheritedOrgIds: number[] = []): Promise<void> {
+		const { valid, errors } = await this.customFieldService.validate(
+			"Device",
+			data || {},
+			orgId,
+			inheritedOrgIds,
+			false
+		);
+
+		if (!valid) {
+			throw new ValidationError({
+				body: {
+					metadata: errors,
+				},
+			});
 		}
 	}
 }

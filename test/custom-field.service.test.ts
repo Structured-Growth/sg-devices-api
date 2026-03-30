@@ -6,6 +6,7 @@ import CustomField from "../database/models/custom-field";
 import { CustomFieldService } from "../src/modules/custom-fields/custom-field.service";
 
 describe("CustomFieldService", () => {
+	const originalTranslateApiUrl = process.env.TRANSLATE_API_URL;
 	let searchParams: Record<string, unknown> | undefined;
 	const repository = {
 		async search(params: Record<string, unknown>) {
@@ -18,25 +19,11 @@ describe("CustomFieldService", () => {
 			};
 		},
 	} as any;
-	const cache = {
-		async get() {
-			return [];
-		},
-		async setWithTags() {
-			return true;
-		},
-	} as any;
 
-	const service = new CustomFieldService(repository, cache);
-	const originalTranslateApiUrl = process.env.TRANSLATE_API_URL;
-	const originalTranslateApiClientId = process.env.TRANSLATE_API_CLIENT_ID;
-	const originalAccountApiUrl = process.env.ACCOUNT_API_URL;
-	const originalFetch = global.fetch;
+	const service = new CustomFieldService(repository);
 
 	before(() => {
 		process.env.TRANSLATE_API_URL = "";
-		delete process.env.TRANSLATE_API_CLIENT_ID;
-		process.env.ACCOUNT_API_URL = "http://account-api.local";
 		container.register("AuthService", {
 			useValue: {
 				generateInternalAccessToken: () => "test-token",
@@ -46,17 +33,11 @@ describe("CustomFieldService", () => {
 
 	after(() => {
 		process.env.TRANSLATE_API_URL = originalTranslateApiUrl;
-		process.env.TRANSLATE_API_CLIENT_ID = originalTranslateApiClientId;
-		process.env.ACCOUNT_API_URL = originalAccountApiUrl;
-		global.fetch = originalFetch;
 	});
 
 	afterEach(() => {
 		delete (CustomField as any).findAll;
-		global.fetch = originalFetch;
 		searchParams = undefined;
-		cache.get = async () => [];
-		cache.setWithTags = async () => true;
 	});
 
 	it("search delegates to repository without inherited orgs", async () => {
@@ -70,81 +51,30 @@ describe("CustomFieldService", () => {
 		assert.deepEqual(searchParams?.orgId, [55]);
 	});
 
-	it("search uses cached parent organizations when includeInherited is true", async () => {
-		const serviceWithCachedParents = new CustomFieldService(
-			repository,
+	it("search includes inherited org ids from principal context", async () => {
+		await service.search(
 			{
-				async get(key: string) {
-					assert.equal(key, "custom-fields:organization-parents:55");
-					return [11, 12];
-				},
-				async setWithTags() {
-					assert.fail("setWithTags should not be called when cache hit");
-				},
-			} as any
+				orgId: 55,
+				entity: ["Device"],
+				includeInherited: true,
+			},
+			[11, 12]
 		);
-
-		await serviceWithCachedParents.search({
-			orgId: 55,
-			entity: ["Device"],
-			includeInherited: true,
-		});
 
 		assert.deepEqual(searchParams?.orgId, [55, 11, 12]);
 	});
 
-	it("search fetches parent organizations from account api and caches them", async () => {
-		let cachedKey: string | undefined;
-		let cachedValue: unknown;
-		let cachedTags: string[] | undefined;
-		let cachedTtl: number | undefined;
-
-		const serviceWithFetch = new CustomFieldService(
-			repository,
+	it("search ignores invalid or duplicate inherited org ids", async () => {
+		await service.search(
 			{
-				async get() {
-					return null;
-				},
-				async setWithTags(key: string, value: unknown, tags: string[], ttlSec: number) {
-					cachedKey = key;
-					cachedValue = value;
-					cachedTags = tags;
-					cachedTtl = ttlSec;
-					return true;
-				},
-			} as any
+				orgId: 55,
+				entity: ["Device"],
+				includeInherited: true,
+			},
+			[55, 11, 0, -1, 11, 12]
 		);
 
-		const mockedFetch: typeof global.fetch = async (input: string | URL | Request, init?: RequestInit) => {
-			const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-			const headers = new Headers(init?.headers);
-
-			assert.equal(url, "http://account-api.local/v1/organizations/55/parents");
-			assert.equal(headers.get("Authorization"), "Bearer test-token");
-
-			return new Response(JSON.stringify([{ id: 11 }, { id: 12 }]), {
-				status: 200,
-				headers: new Headers({
-					"Content-Type": "application/json",
-				}),
-			});
-		};
-		global.fetch = mockedFetch;
-
-		await serviceWithFetch.search({
-			orgId: 55,
-			entity: ["Device"],
-			includeInherited: true,
-		});
-
 		assert.deepEqual(searchParams?.orgId, [55, 11, 12]);
-		assert.equal(cachedKey, "custom-fields:organization-parents:55");
-		assert.deepEqual(cachedValue, [11, 12]);
-		assert.deepEqual(cachedTags, [
-			"custom-fields:organization-parents",
-			"custom-fields:organization-parents:55",
-		]);
-		assert.equal(cachedTtl, 60 * 60 * 24 * 30);
 	});
 
 	it("validate returns valid when no custom fields found", async () => {
@@ -160,26 +90,13 @@ describe("CustomFieldService", () => {
 		assert.isUndefined(result.errors);
 	});
 
-	it("validate includes inherited parent organizations from cache", async () => {
-		const serviceWithCachedParents = new CustomFieldService(
-			repository,
-			{
-				async get(key: string) {
-					assert.equal(key, "custom-fields:organization-parents:101");
-					return [11, 12];
-				},
-				async setWithTags() {
-					assert.fail("setWithTags should not be called when cache hit");
-				},
-			} as any
-		);
-
+	it("validate includes inherited org ids from principal context", async () => {
 		(CustomField as any).findAll = async (params: Record<string, any>) => {
 			assert.deepEqual(params.where.orgId[Op.or], [101, 11, 12]);
 			return [];
 		};
 
-		const result = await serviceWithCachedParents.validate("Device", {}, 101);
+		const result = await service.validate("Device", {}, 101, [11, 12]);
 
 		assert.equal(result.valid, true);
 	});
@@ -217,6 +134,7 @@ describe("CustomFieldService", () => {
 				calCode: "AB",
 			},
 			101,
+			[],
 			false
 		);
 
