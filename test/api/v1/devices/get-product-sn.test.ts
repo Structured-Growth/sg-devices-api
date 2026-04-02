@@ -5,9 +5,10 @@ import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/devices/get-product-sn", () => {
 	const { server } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
 	beforeEach(() => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
 		return seedCustomFields(orgId);
 	});
 

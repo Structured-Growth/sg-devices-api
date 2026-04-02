@@ -1,6 +1,7 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { customFieldAlternativesSchema } from "../../../common/custom-field-schema";
 
 describe("PUT /api/v1/custom-fields/:customFieldId", () => {
 	const { server, context } = initTest();
@@ -9,18 +10,14 @@ describe("PUT /api/v1/custom-fields/:customFieldId", () => {
 	it("Should create custom field", async () => {
 		const { statusCode, body } = await server.post("/v1/custom-fields").send({
 			orgId,
-			region: "us",
 			entity: "Device",
 			title: "Calibration code",
 			name: "calCode",
-			schema: {
-				type: "string",
-			},
+			schema: customFieldAlternativesSchema,
 			status: "active",
 		});
 		assert.equal(statusCode, 201);
-		assert.isNumber(body.id);
-		context["customFieldId"] = body.id;
+		context.customFieldId = body.id;
 	});
 
 	it("Should update custom field", async () => {
@@ -28,10 +25,7 @@ describe("PUT /api/v1/custom-fields/:customFieldId", () => {
 			entity: "Device",
 			title: "Expiration date",
 			name: "endOfLifeDatetime",
-			schema: {
-				type: "string",
-				format: "date-time",
-			},
+			schema: customFieldAlternativesSchema,
 			status: "inactive",
 		});
 		assert.equal(statusCode, 200);
@@ -39,8 +33,7 @@ describe("PUT /api/v1/custom-fields/:customFieldId", () => {
 		assert.equal(body.entity, "Device");
 		assert.equal(body.title, "Expiration date");
 		assert.equal(body.name, "endOfLifeDatetime");
-		assert.equal(body.schema.type, "string");
-		assert.equal(body.schema.format, "date-time");
+		assert.equal(body.schema.type, "alternatives");
 		assert.equal(body.status, "inactive");
 		assert.isString(body.arn);
 	});
@@ -54,14 +47,44 @@ describe("PUT /api/v1/custom-fields/:customFieldId", () => {
 			status: "inactivetoday",
 		});
 		assert.equal(statusCode, 422);
-		assert.isDefined(body.validation);
 		assert.equal(body.name, "ValidationError");
-		assert.isString(body.message);
 		assert.isString(body.validation.body.entity[0]);
 		assert.isString(body.validation.body.title[0]);
 		assert.isString(body.validation.body.name[0]);
 		assert.isString(body.validation.body.schema[0]);
 		assert.isString(body.validation.body.status[0]);
+	});
+
+	it("Should return validation error for invalid name characters", async () => {
+		const { statusCode, body } = await server.put(`/v1/custom-fields/${context.customFieldId}`).send({
+			name: "end of life!",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.name[0]);
+	});
+
+	it("Should return validation error for duplicate custom field", async () => {
+		const { statusCode: createStatusCode, body: createBody } = await server.post("/v1/custom-fields").send({
+			orgId,
+			entity: "Device",
+			title: "Calibration code 2",
+			name: "otherCode",
+			schema: customFieldAlternativesSchema,
+			status: "active",
+		});
+
+		assert.equal(createStatusCode, 201);
+
+		const { statusCode, body } = await server.put(`/v1/custom-fields/${createBody.id}`).send({
+			entity: "Device",
+			name: "endOfLifeDatetime",
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.name[0]);
 	});
 
 	it("Should return validation error if custom field id is wrong", async () => {

@@ -1,24 +1,18 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
-import { joi, RegionEnum } from "@structured-growth/microservice-sdk";
 import { initTest } from "../../../common/init-test";
-import CustomField from "../../../../database/models/custom-field";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/custom-fields/validate", () => {
 	const { server } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
+
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedCustomFields(orgId);
+	});
 
 	it("Should return successful validation result", async () => {
-		await CustomField.create({
-			orgId,
-			region: RegionEnum.US,
-			entity: "Device",
-			title: "Calibration code",
-			name: "calCode",
-			schema: joi.string().min(2).describe(),
-			status: "active",
-		});
-
 		const { statusCode, body } = await server.post("/v1/custom-fields/validate").send({
 			entity: "Device",
 			orgId,
@@ -34,21 +28,13 @@ describe("POST /api/v1/custom-fields/validate", () => {
 	});
 
 	it("Should return validation result with errors", async () => {
-		await CustomField.create({
-			orgId,
-			region: RegionEnum.US,
-			entity: "Device",
-			title: "Calibration code",
-			name: "calCode",
-			schema: joi.string().min(2).describe(),
-			status: "active",
-		});
-
 		const { statusCode, body } = await server.post("/v1/custom-fields/validate").send({
 			entity: "Device",
 			orgId,
 			data: {
-				calCode: "A",
+				calCode: {
+					invalid: true,
+				},
 			},
 		});
 

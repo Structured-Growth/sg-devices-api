@@ -47,6 +47,21 @@ module.exports = {
 				created_at: Sequelize.DATE,
 				updated_at: Sequelize.DATE,
 				deleted_at: Sequelize.DATE,
+				}
+			);
+
+		await queryInterface.addIndex(
+			{
+				schema: process.env.DB_SCHEMA,
+				tableName: "custom_fields",
+			},
+			{
+				name: "custom_fields_org_entity_name_unique",
+				fields: ["org_id", "entity", "name"],
+				unique: true,
+				where: {
+					deleted_at: null,
+				},
 			}
 		);
 	},

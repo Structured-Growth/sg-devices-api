@@ -5,13 +5,11 @@ import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("PUT /api/v1/devices/:deviceId", () => {
 	const { server, context } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
-	beforeEach(() => {
-		return seedCustomFields(orgId);
-	});
-
-	it("Should create device", async () => {
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedCustomFields(orgId);
 		const { statusCode, body } = await server.post("/v1/devices").send({
 			orgId,
 			region: "us",
@@ -31,7 +29,7 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		context["deviceId"] = body.id;
+		context.deviceId = body.id;
 	});
 
 	it("Should update device", async () => {
@@ -75,6 +73,7 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 			modelNumber: 2,
 			serialNumber: 3,
 			imei: 4,
+			metadata: "bad",
 			status: "inactivetoday",
 		});
 		assert.equal(statusCode, 422);
@@ -89,6 +88,7 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.isString(body.validation.body.modelNumber[0]);
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
+		assert.isString(body.validation.body.metadata[0]);
 		assert.isString(body.validation.body.status[0]);
 	});
 
@@ -116,5 +116,16 @@ describe("PUT /api/v1/devices/:deviceId", () => {
 		assert.equal(statusCode, 422);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.validation.body.metadata.productSerialNumber[0]);
+	});
+
+	it("Should keep existing metadata when update payload omits metadata", async () => {
+		const { statusCode, body } = await server.put(`/v1/devices/${context.deviceId}`).send({
+			status: "inactive",
+		});
+
+		assert.equal(statusCode, 200);
+		assert.equal(body.status, "inactive");
+		assert.equal(body.metadata.a, 1);
+		assert.equal(body.metadata.b, 2);
 	});
 });

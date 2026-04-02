@@ -29,9 +29,12 @@ export class DevicesService {
 	}
 
 	public async create(params: DeviceCreateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
-		await this.validateMetadata(params.metadata, params.orgId, inheritedOrgIds);
+		await this.customFieldService.validate("Device", params.metadata, [params.orgId, ...inheritedOrgIds]);
 
-		return this.devicesRepository.create(params);
+		return this.devicesRepository.create({
+			...params,
+			metadata: params.metadata ?? {},
+		});
 	}
 
 	public async update(id: number, params: DeviceUpdateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
@@ -41,12 +44,11 @@ export class DevicesService {
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
 
-		const nextDevice = {
-			...device.toJSON(),
-			...params,
-		};
-
-		await this.validateMetadata(nextDevice.metadata, nextDevice.orgId, inheritedOrgIds);
+		await this.customFieldService.validate(
+			"Device",
+			params.metadata !== undefined ? params.metadata : device.metadata,
+			[device.orgId, ...inheritedOrgIds]
+		);
 
 		return this.devicesRepository.update(id, params);
 	}
@@ -86,7 +88,7 @@ export class DevicesService {
 
 	public async bulk(devices: DeviceCreateBodyInterface[], inheritedOrgIds: number[] = []): Promise<Device[]> {
 		for (const device of devices) {
-			await this.validateMetadata(device.metadata, device.orgId, inheritedOrgIds);
+			await this.customFieldService.validate("Device", device.metadata, [device.orgId, ...inheritedOrgIds]);
 		}
 
 		return await Device.sequelize.transaction(async (transaction) => {
@@ -264,7 +266,7 @@ export class DevicesService {
 			imei: csvDefaults.imei ? String(csvDefaults.imei) : undefined,
 			status: (csvDefaults.status ?? "active") as "active" | "inactive",
 			serialNumber,
-			metadata: Object.keys(metadata).length ? metadata : null,
+			metadata,
 		};
 	}
 
@@ -285,21 +287,4 @@ export class DevicesService {
 		}
 	}
 
-	private async validateMetadata(data: Record<string, unknown>, orgId: number, inheritedOrgIds: number[] = []): Promise<void> {
-		const { valid, errors } = await this.customFieldService.validate(
-			"Device",
-			data || {},
-			orgId,
-			inheritedOrgIds,
-			false
-		);
-
-		if (!valid) {
-			throw new ValidationError({
-				body: {
-					metadata: errors,
-				},
-			});
-		}
-	}
 }

@@ -23,5 +23,5 @@ export interface DeviceUpdateBodyInterface {
 	/**
 	 * Custom metadata could be added to a metric
 	 */
-	metadata?: Record<string, string | number>;
+	metadata?: Record<string, unknown>;
 }

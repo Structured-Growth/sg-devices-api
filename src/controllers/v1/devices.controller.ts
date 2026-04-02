@@ -119,7 +119,7 @@ export class DevicesController extends BaseController {
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
 		const device = await this.devicesService.create(
 			body,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 		this.response.status(201);
 
@@ -147,7 +147,7 @@ export class DevicesController extends BaseController {
 
 		const createdDevices = await this.devicesService.bulk(
 			body,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 
 		for (const [index, device] of createdDevices.entries()) {
@@ -262,7 +262,7 @@ export class DevicesController extends BaseController {
 		const device = await this.devicesService.update(
 			deviceId,
 			body,
-			"orgIds" in this.principal && Array.isArray(this.principal.orgIds) ? this.principal.orgIds : []
+			this.principal.parentOrgIds ?? []
 		);
 
 		await this.eventBus.publish(

@@ -5,9 +5,10 @@ import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/devices", () => {
 	const { server, context } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
 	beforeEach(() => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
 		return seedCustomFields(orgId);
 	});
 
@@ -59,6 +60,7 @@ describe("POST /api/v1/devices", () => {
 			modelNumber: 78,
 			serialNumber: 45896572,
 			imei: 12855644,
+			metadata: "bad",
 			status: "veryactive",
 		});
 		assert.equal(statusCode, 422);
@@ -75,6 +77,7 @@ describe("POST /api/v1/devices", () => {
 		assert.isString(body.validation.body.modelNumber[0]);
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
+		assert.isString(body.validation.body.metadata[0]);
 		assert.isString(body.validation.body.status[0]);
 	});
 
@@ -93,5 +96,18 @@ describe("POST /api/v1/devices", () => {
 		assert.equal(statusCode, 422);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.validation.body.metadata.calCode[0]);
+	});
+
+	it("Should default metadata to empty object", async () => {
+		const { statusCode, body } = await server.post("/v1/devices").send({
+			orgId,
+			region: "us",
+			deviceCategoryId: 1,
+			deviceTypeId: 1,
+			status: "active",
+		});
+
+		assert.equal(statusCode, 201);
+		assert.deepEqual(body.metadata, {});
 	});
 });

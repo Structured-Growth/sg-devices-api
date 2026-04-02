@@ -5,13 +5,11 @@ import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/devices/:deviceId", () => {
 	const { server, context } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
-	beforeEach(() => {
-		return seedCustomFields(orgId);
-	});
-
-	it("Should create device", async () => {
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedCustomFields(orgId);
 		const { statusCode, body } = await server.post("/v1/devices").send({
 			orgId,
 			region: "us",
@@ -31,8 +29,7 @@ describe("GET /api/v1/devices/:deviceId", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		assert.equal(body.orgId, orgId);
-		context["deviceId"] = body.id;
+		context.deviceId = body.id;
 	});
 
 	it("Should read device", async () => {

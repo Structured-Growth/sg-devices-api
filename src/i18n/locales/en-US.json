@@ -24,7 +24,8 @@
 			"csv_expiration_date": "Invalid Expiration Date value: "
 		},
 		"device_custom_field": {
-			"name": "Device custom field"
+			"name": "Device custom field",
+			"custom_field_created": "A custom field with this orgId, entity and name has already been created."
 		},
     "upload": {
       "no_file": "CSV file is required",

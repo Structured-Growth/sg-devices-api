@@ -1,6 +1,7 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { customFieldAlternativesSchema } from "../../../common/custom-field-schema";
 
 describe("GET /api/v1/custom-fields/:customFieldId", () => {
 	const { server, context } = initTest();
@@ -9,13 +10,10 @@ describe("GET /api/v1/custom-fields/:customFieldId", () => {
 	it("Should create custom field", async () => {
 		const { statusCode, body } = await server.post("/v1/custom-fields").send({
 			orgId,
-			region: "us",
 			entity: "Device",
 			title: "Calibration code",
 			name: "calCode",
-			schema: {
-				type: "string",
-			},
+			schema: customFieldAlternativesSchema,
 			status: "active",
 		});
 		assert.equal(statusCode, 201);
@@ -32,7 +30,7 @@ describe("GET /api/v1/custom-fields/:customFieldId", () => {
 		assert.equal(body.entity, "Device");
 		assert.equal(body.title, "Calibration code");
 		assert.equal(body.name, "calCode");
-		assert.equal(body.schema.type, "string");
+		assert.equal(body.schema.type, "alternatives");
 		assert.equal(body.status, "active");
 		assert.isString(body.createdAt);
 		assert.isString(body.updatedAt);

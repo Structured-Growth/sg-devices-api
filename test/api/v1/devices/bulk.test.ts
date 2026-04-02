@@ -5,9 +5,10 @@ import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/devices/bulk", () => {
 	const { server } = initTest();
-	const orgId = Math.floor(Math.random() * 1000000) + 1;
+	let orgId: number;
 
 	beforeEach(() => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
 		return seedCustomFields(orgId);
 	});
 
@@ -77,6 +78,7 @@ describe("POST /api/v1/devices/bulk", () => {
 				modelNumber: true,
 				serialNumber: 123,
 				imei: 456,
+				metadata: "bad",
 				status: "broken",
 			},
 		]);
@@ -95,6 +97,7 @@ describe("POST /api/v1/devices/bulk", () => {
 		assert.isString(body.validation.body[0].modelNumber[0]);
 		assert.isString(body.validation.body[0].serialNumber[0]);
 		assert.isString(body.validation.body[0].imei[0]);
+		assert.isString(body.validation.body[0].metadata[0]);
 		assert.isString(body.validation.body[0].status[0]);
 	});
 
@@ -115,5 +118,22 @@ describe("POST /api/v1/devices/bulk", () => {
 		assert.equal(statusCode, 422);
 		assert.equal(body.name, "ValidationError");
 		assert.isString(body.validation.body.metadata.calCode[0]);
+	});
+
+	it("Should default metadata to empty object in bulk create", async () => {
+		const { statusCode, body } = await server.post("/v1/devices/bulk").send([
+			{
+				orgId,
+				region: "us",
+				deviceCategoryId: 1,
+				deviceTypeId: 1,
+				serialNumber: `bulk-${Date.now()}`,
+				status: "active",
+			},
+		]);
+
+		assert.equal(statusCode, 201);
+		assert.isArray(body);
+		assert.deepEqual(body[0].metadata, {});
 	});
 });
