@@ -286,5 +286,4 @@ export class DevicesService {
 			throw new ValidationError({}, this.i18n.__("error.device.serial_exists") + `: ${conflictList}`);
 		}
 	}
-
 }

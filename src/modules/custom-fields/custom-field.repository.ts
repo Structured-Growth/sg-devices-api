@@ -7,9 +7,7 @@ import {
 	NotFoundError,
 	I18nType,
 } from "@structured-growth/microservice-sdk";
-import CustomField, {
-	CustomFieldCreationAttributes,
-} from "../../../database/models/custom-field";
+import CustomField, { CustomFieldCreationAttributes } from "../../../database/models/custom-field";
 import { CustomFieldSearchParamsInterface } from "../../interfaces/custom-field-search-params.interface";
 import { CustomFieldUpdateBodyInterface } from "../../interfaces/custom-field-update-body.interface";
 
@@ -19,12 +17,7 @@ type CustomFieldRepositorySearchParams = Omit<CustomFieldSearchParamsInterface, 
 
 @autoInjectable()
 export class CustomFieldRepository
-	implements
-		RepositoryInterface<
-			CustomField,
-			CustomFieldRepositorySearchParams,
-			CustomFieldCreationAttributes
-		>
+	implements RepositoryInterface<CustomField, CustomFieldRepositorySearchParams, CustomFieldCreationAttributes>
 {
 	private i18n: I18nType;
 
@@ -32,9 +25,7 @@ export class CustomFieldRepository
 		this.i18n = this.getI18n();
 	}
 
-	public async search(
-		params: CustomFieldRepositorySearchParams
-	): Promise<SearchResultInterface<CustomField>> {
+	public async search(params: CustomFieldRepositorySearchParams): Promise<SearchResultInterface<CustomField>> {
 		const page = params.page || 1;
 		const limit = params.limit || 20;
 		const offset = (page - 1) * limit;
