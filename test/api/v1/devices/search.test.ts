@@ -1,13 +1,17 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/devices", () => {
 	const { server, context } = initTest();
+	let orgId: number;
 
-	it("Should create device", async () => {
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedCustomFields(orgId);
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -25,7 +29,7 @@ describe("GET /api/v1/devices", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		context["deviceId"] = body.id;
+		context.deviceId = body.id;
 	});
 
 	it("Should return validation error", async () => {
@@ -35,6 +39,7 @@ describe("GET /api/v1/devices", () => {
 			userId: 0,
 			deviceCategoryId: -5,
 			deviceTypeId: -7,
+			metadata: "bad",
 			id: -1,
 			arn: 1,
 			page: "b",
@@ -55,6 +60,7 @@ describe("GET /api/v1/devices", () => {
 		assert.isString(body.validation.query.userId[0]);
 		assert.isString(body.validation.query.deviceCategoryId[0]);
 		assert.isString(body.validation.query.deviceTypeId[0]);
+		assert.isString(body.validation.query.metadata[0]);
 		assert.isString(body.validation.query.arn[0]);
 		assert.isString(body.validation.query.manufacturer[0]);
 		assert.isString(body.validation.query.modelNumber[0]);
@@ -66,7 +72,7 @@ describe("GET /api/v1/devices", () => {
 	it("Should return device (serialNumber as array)", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
 			"id[0]": context.deviceId,
-			orgId: 1,
+			orgId,
 			accountId: 1,
 			userId: 1,
 			deviceCategoryId: 1,
@@ -79,7 +85,7 @@ describe("GET /api/v1/devices", () => {
 		});
 		assert.equal(statusCode, 200);
 		assert.equal(body.data[0].id, context.deviceId);
-		assert.equal(body.data[0].orgId, 1);
+		assert.equal(body.data[0].orgId, orgId);
 		assert.equal(body.data[0].accountId, 1);
 		assert.equal(body.data[0].userId, 1);
 		assert.equal(body.data[0].deviceCategoryId, 1);
@@ -100,7 +106,7 @@ describe("GET /api/v1/devices", () => {
 	it("Should return device (serialNumber as string)", async () => {
 		const { statusCode, body } = await server.get("/v1/devices").query({
 			"id[0]": context.deviceId,
-			orgId: 1,
+			orgId,
 			accountId: 1,
 			userId: 1,
 			deviceCategoryId: 1,
@@ -116,5 +122,20 @@ describe("GET /api/v1/devices", () => {
 		assert.equal(body.total, 1);
 		assert.equal(body.data[0].id, context.deviceId);
 		assert.equal(body.data[0].serialNumber, "45896572");
+	});
+
+	it("Should return device filtered by metadata", async () => {
+		const { statusCode, body } = await server.get("/v1/devices").query({
+			"id[0]": context.deviceId,
+			orgId,
+			metadata: {
+				a: 1,
+			},
+		});
+
+		assert.equal(statusCode, 200);
+		assert.equal(body.total, 1);
+		assert.equal(body.data[0].id, context.deviceId);
+		assert.equal(body.data[0].metadata.a, 1);
 	});
 });

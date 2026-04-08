@@ -1,13 +1,17 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("DELETE /api/v1/devices/:deviceId", () => {
 	const { server, context } = initTest();
+	let orgId: number;
 
-	it("Should create device", async () => {
+	beforeEach(async () => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		await seedCustomFields(orgId);
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -18,14 +22,18 @@ describe("DELETE /api/v1/devices/:deviceId", () => {
 			serialNumber: "45896572",
 			imei: "dfrffds12855644",
 			status: "active",
+			metadata: {
+				a: 1,
+				b: 2,
+			},
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		context["deviceId"] = body.id;
+		context.deviceId = body.id;
 	});
 
 	it("Should delete device", async () => {
-		const { statusCode, body } = await server.delete(`/v1/devices/${context.deviceId}`);
+		const { statusCode } = await server.delete(`/v1/devices/${context.deviceId}`);
 		assert.equal(statusCode, 204);
 	});
 

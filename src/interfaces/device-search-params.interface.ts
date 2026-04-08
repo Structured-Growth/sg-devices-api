@@ -23,5 +23,9 @@ export interface DeviceSearchParamsInterface extends Omit<DefaultSearchParamsInt
 	imei?: string;
 	status?: DeviceAttributes["status"];
 	q?: string;
-	metadata?: string;
+	/**
+	 * Search by custom entity fields.
+	 * Example: metadata[productSerialNumber]=ABC123
+	 */
+	"metadata[customFieldName]"?: string;
 }

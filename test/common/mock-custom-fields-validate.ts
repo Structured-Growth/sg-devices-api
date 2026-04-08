@@ -4,6 +4,9 @@ type ValidationPayload = {
 	errors?: Record<string, unknown>;
 };
 
+type FetchInput = Parameters<typeof fetch>[0];
+type FetchInit = Parameters<typeof fetch>[1];
+
 const originalFetch = global.fetch.bind(global);
 
 let payload: ValidationPayload = {
@@ -11,9 +14,9 @@ let payload: ValidationPayload = {
 };
 
 export function installCustomFieldValidationMock(): void {
-	global.fetch = (async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+	const mockedFetch: typeof global.fetch = async (input: FetchInput, init?: FetchInit) => {
 		const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
-		const validationUrl = `${process.env.ACCOUNT_API_URL}/v1/resolver/validate`;
+		const validationUrl = `${process.env.ACCOUNT_API_URL}/v1/custom-fields/validate`;
 
 		if (url === validationUrl) {
 			return new Response(JSON.stringify(payload), {
@@ -25,7 +28,9 @@ export function installCustomFieldValidationMock(): void {
 		}
 
 		return originalFetch(input as any, init);
-	}) as typeof global.fetch;
+	};
+
+	global.fetch = mockedFetch;
 }
 
 export function restoreCustomFieldValidationMock(): void {
