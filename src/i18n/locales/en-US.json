@@ -23,6 +23,10 @@
 			"csv_column_order": "Column order does not match template.",
 			"csv_expiration_date": "Invalid Expiration Date value: "
 		},
+		"device_custom_field": {
+			"name": "Device custom field",
+			"custom_field_created": "A custom field with this orgId, entity and name has already been created."
+		},
     "upload": {
       "no_file": "CSV file is required",
       "invalid_file": "Invalid file type",
@@ -55,6 +59,17 @@
 			"column": "Column",
 			"q": "Query",
 			"metadata": "Metadata"
+    },
+		"customFields": {
+			"orgId": "Organization Id",
+			"region": "Region",
+			"entity": "Entity",
+			"title": "Title",
+			"name": "Name",
+			"schema": "Schema",
+			"status": "Status",
+			"customFieldId": "Custom field Id",
+			"includeInherited": "Include inherited"
     }
   }
 }

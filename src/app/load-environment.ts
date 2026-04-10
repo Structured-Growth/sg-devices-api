@@ -80,5 +80,6 @@ export function loadEnvironment() {
 		START_SQS_LISTENER_ON_WEBSERVER_STARTUP: joi.bool().required(),
 		QUEUE_PROVIDER: joi.string().required(),
 		SQS_QUEUE_URL: joi.string().allow(""),
+		ACCOUNT_API_URL: joi.string().required(),
 	});
 }

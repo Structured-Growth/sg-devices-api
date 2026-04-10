@@ -1,13 +1,20 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("POST /api/v1/devices", () => {
 	const { server, context } = initTest();
+	let orgId: number;
+
+	beforeEach(() => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		return seedCustomFields(orgId);
+	});
 
 	it("Should create device", async () => {
 		const { statusCode, body } = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -25,7 +32,7 @@ describe("POST /api/v1/devices", () => {
 		});
 		assert.equal(statusCode, 201);
 		assert.isNumber(body.id);
-		assert.equal(body.orgId, 1);
+		assert.equal(body.orgId, orgId);
 		assert.equal(body.accountId, 1);
 		assert.equal(body.userId, 1);
 		assert.equal(body.deviceCategoryId, 1);
@@ -53,6 +60,7 @@ describe("POST /api/v1/devices", () => {
 			modelNumber: 78,
 			serialNumber: 45896572,
 			imei: 12855644,
+			metadata: "bad",
 			status: "veryactive",
 		});
 		assert.equal(statusCode, 422);
@@ -69,6 +77,37 @@ describe("POST /api/v1/devices", () => {
 		assert.isString(body.validation.body.modelNumber[0]);
 		assert.isString(body.validation.body.serialNumber[0]);
 		assert.isString(body.validation.body.imei[0]);
+		assert.isString(body.validation.body.metadata[0]);
 		assert.isString(body.validation.body.status[0]);
+	});
+
+	it("Should return validation error for invalid custom fields", async () => {
+		const { statusCode, body } = await server.post("/v1/devices").send({
+			orgId,
+			region: "us",
+			deviceCategoryId: 1,
+			deviceTypeId: 1,
+			status: "active",
+			metadata: {
+				calCode: 123,
+			},
+		});
+
+		assert.equal(statusCode, 422);
+		assert.equal(body.name, "ValidationError");
+		assert.isString(body.validation.body.metadata.calCode[0]);
+	});
+
+	it("Should default metadata to empty object", async () => {
+		const { statusCode, body } = await server.post("/v1/devices").send({
+			orgId,
+			region: "us",
+			deviceCategoryId: 1,
+			deviceTypeId: 1,
+			status: "active",
+		});
+
+		assert.equal(statusCode, 201);
+		assert.deepEqual(body.metadata, {});
 	});
 });

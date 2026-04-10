@@ -1,4 +1,4 @@
-import { Get, Route, Tags, Queries, SuccessResponse, OperationId } from "tsoa";
+import { Get, Route, Tags, Queries, SuccessResponse, OperationId, Post, Body } from "tsoa";
 import { autoInjectable, BaseController, DescribeAction, NotFoundError } from "@structured-growth/microservice-sdk";
 import * as controllers from "./index";
 import { ResolveQueryParamsInterface } from "../../interfaces/resolve-query-params.interface";
@@ -10,6 +10,10 @@ import { ResolveModelsResponseInterface } from "../../interfaces/resolve-models-
 @Tags("ResolverController")
 @autoInjectable()
 export class ResolverController extends BaseController {
+	constructor() {
+		super();
+	}
+
 	/**
 	 * Resolve resource's ARN
 	 */

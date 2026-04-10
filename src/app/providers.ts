@@ -6,6 +6,8 @@ import {
 	Lifecycle,
 	logWriters,
 	Logger,
+	CacheService,
+	cacheTransports,
 	eventBusProviders,
 	EventbusService,
 	queueProviders,
@@ -14,6 +16,8 @@ import {
 	AuthService,
 } from "@structured-growth/microservice-sdk";
 import { loadEnvironment } from "./load-environment";
+import { CustomFieldRepository } from "../modules/custom-fields/custom-field.repository";
+import { CustomFieldService } from "../modules/custom-fields/custom-field.service";
 import { DevicesRepository } from "../modules/devices/devices.repository";
 import { DevicesService } from "../modules/devices/devices.service";
 
@@ -34,9 +38,15 @@ container.register("logResponses", { useValue: process.env.LOG_HTTP_RESPONSES ==
 container.register("LogWriter", logWriters[process.env.LOG_WRITER] || "ConsoleLogWriter", {
 	lifecycle: Lifecycle.Singleton,
 });
+container.register("CacheTransport", cacheTransports[process.env.CACHE_TRANSPORT || "NoCacheTransport"], {
+	lifecycle: Lifecycle.Singleton,
+});
+container.register("CacheService", CacheService, { lifecycle: Lifecycle.Singleton });
+container.register("CustomFieldService", CustomFieldService);
 container.register("DevicesService", DevicesService);
 
 // repositories
+container.register("CustomFieldRepository", CustomFieldRepository);
 container.register("DevicesRepository", DevicesRepository);
 
 container.register("Logger", Logger);

@@ -117,7 +117,7 @@ export class DevicesController extends BaseController {
 	@DescribeResource("User", ({ body }) => [Number(body.userId)])
 	@HashFields(["manufacturer", "modelNumber", "serialNumber", "imei"])
 	async create(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface): Promise<PublicDeviceAttributes> {
-		const device = await this.devicesRepository.create(body);
+		const device = await this.devicesService.create(body, this.principal.parentOrgIds ?? []);
 		this.response.status(201);
 
 		await this.eventBus.publish(
@@ -142,7 +142,7 @@ export class DevicesController extends BaseController {
 	async bulk(@Queries() query: {}, @Body() body: DeviceCreateBodyInterface[]): Promise<PublicDeviceAttributes[]> {
 		this.response.status(201);
 
-		const createdDevices = await this.devicesService.bulk(body);
+		const createdDevices = await this.devicesService.bulk(body, this.principal.parentOrgIds ?? []);
 
 		for (const [index, device] of createdDevices.entries()) {
 			await this.eventBus.publish(
@@ -253,7 +253,7 @@ export class DevicesController extends BaseController {
 		@Queries() query: {},
 		@Body() body: DeviceUpdateBodyInterface
 	): Promise<PublicDeviceAttributes> {
-		const device = await this.devicesRepository.update(deviceId, body);
+		const device = await this.devicesService.update(deviceId, body, this.principal.parentOrgIds ?? []);
 
 		await this.eventBus.publish(
 			new EventMutation(this.principal.arn, device.arn, `${this.appPrefix}:devices/update`, JSON.stringify(body))

@@ -10,6 +10,7 @@ import {
 import Device, { DeviceCreationAttributes, DeviceUpdateAttributes } from "../../../database/models/device";
 import { DeviceSearchParamsInterface } from "../../interfaces/device-search-params.interface";
 import { Transaction } from "sequelize";
+import { isUndefined, omitBy } from "lodash";
 
 @autoInjectable()
 export class DevicesRepository
@@ -70,38 +71,24 @@ export class DevicesRepository
 			where["serialNumber"] = { [Op.in]: serialNumbersClean };
 		}
 
-		const metadataRaw = (params as any).metadata;
-		const metadataStr = typeof metadataRaw === "string" ? metadataRaw.trim() : "";
-		let metadataObj: Record<string, unknown> | null = null;
-
-		if (metadataStr) {
-			if (metadataStr.startsWith("{") && metadataStr.endsWith("}")) {
-				const parsed = JSON.parse(metadataStr);
-				if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-					metadataObj = parsed as Record<string, unknown>;
-				}
-			}
-		}
-
-		if (metadataObj) {
+		if ((params as any).metadata && typeof (params as any).metadata === "object") {
 			where[Op.and] = where[Op.and] ?? [];
 
-			for (const [keyRaw, valRaw] of Object.entries(metadataObj)) {
+			for (const [keyRaw, valRaw] of Object.entries((params as any).metadata)) {
 				if (valRaw === null || valRaw === undefined) continue;
 
-				const key = String(keyRaw).replace(/[^a-zA-Z0-9_]/g, "");
+				const key = String(keyRaw).replace(/[^a-zA-Z0-9_-]/g, "");
 				if (!key) continue;
 
-				const v = String(valRaw).trim();
-				if (!v) continue;
+				const value = String(valRaw).trim();
+				if (!value) continue;
 
 				const left = Sequelize.literal(`("metadata"->>'${key}')`);
 
-				if (v.includes("*")) {
-					const like = v.replace(/\*/g, "%");
-					where[Op.and].push(Sequelize.where(left, { [Op.iLike]: like }));
+				if (value.includes("*")) {
+					where[Op.and].push(Sequelize.where(left, { [Op.iLike]: value.replace(/\*/g, "%") }));
 				} else {
-					where[Op.and].push(Sequelize.where(left, { [Op.eq]: v }));
+					where[Op.and].push(Sequelize.where(left, { [Op.eq]: value }));
 				}
 			}
 		}
@@ -142,7 +129,7 @@ export class DevicesRepository
 		if (!device) {
 			throw new NotFoundError(`${this.i18n.__("error.device.name")} ${id} ${this.i18n.__("error.common.not_found")}`);
 		}
-		device.setAttributes(params);
+		device.setAttributes(omitBy(params, isUndefined));
 
 		return device.save();
 	}

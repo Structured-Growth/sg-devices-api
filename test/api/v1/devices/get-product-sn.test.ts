@@ -1,9 +1,16 @@
 import "../../../../src/app/providers";
 import { assert } from "chai";
 import { initTest } from "../../../common/init-test";
+import { seedCustomFields } from "../../../common/seed-custom-fields";
 
 describe("GET /api/v1/devices/get-product-sn", () => {
 	const { server } = initTest();
+	let orgId: number;
+
+	beforeEach(() => {
+		orgId = Math.floor(Math.random() * 1000000) + 1;
+		return seedCustomFields(orgId);
+	});
 
 	it("Should return validation error (serialNumber is required array)", async () => {
 		const r1 = await server.get("/v1/devices/get-product-sn");
@@ -27,7 +34,7 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 		const snNo = `IEEE-NO-PSN-${suffix}`;
 
 		const d1 = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -43,7 +50,7 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 		assert.equal(d1.statusCode, 201);
 
 		const d2 = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
@@ -78,7 +85,7 @@ describe("GET /api/v1/devices/get-product-sn", () => {
 		const snAbsent = `IEEE-ABSENT-${suffix}`;
 
 		const d = await server.post("/v1/devices").send({
-			orgId: 1,
+			orgId,
 			region: "us",
 			accountId: 1,
 			userId: 1,
