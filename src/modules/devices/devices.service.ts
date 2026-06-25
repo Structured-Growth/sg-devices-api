@@ -1,7 +1,15 @@
-import { autoInjectable, inject, ValidationError, I18nType, NotFoundError } from "@structured-growth/microservice-sdk";
+import {
+	autoInjectable,
+	inject,
+	ValidationError,
+	I18nType,
+	NotFoundError,
+	Emits,
+	EventbusService,
+} from "@structured-growth/microservice-sdk";
 import { DevicesRepository } from "./devices.repository";
 import { DeviceCreateBodyInterface } from "../../interfaces/device-create-body.interface";
-import Device from "../../../database/models/device";
+import Device, { DeviceAttributes } from "../../../database/models/device";
 import { Transaction } from "sequelize";
 import { parse, unparse } from "papaparse";
 import { DeviceGetProductSNParamsInterface } from "../../interfaces/device-get-product-sn-params.interface";
@@ -23,18 +31,28 @@ export class DevicesService {
 	constructor(
 		@inject("DevicesRepository") private devicesRepository: DevicesRepository,
 		@inject("CustomFieldService") private customFieldService: CustomFieldService,
+		@inject("EventbusService") private eventBus: EventbusService,
 		@inject("i18n") private getI18n: () => I18nType
 	) {
 		this.i18n = this.getI18n();
 	}
 
+	@Emits<DeviceAttributes>("events/devices/created", [Device])
 	public async create(params: DeviceCreateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
 		await this.customFieldService.validate("Device", params.metadata, [params.orgId, ...inheritedOrgIds]);
 
-		return this.devicesRepository.create({
+		const device = await this.devicesRepository.create({
 			...params,
 			metadata: params.metadata ?? {},
 		});
+
+		await this.eventBus.publish({
+			arn: `events/devices/created`,
+			data: device.toJSON(),
+			resources: [device.arn],
+		});
+
+		return device;
 	}
 
 	public async update(id: number, params: DeviceUpdateBodyInterface, inheritedOrgIds: number[] = []): Promise<Device> {
