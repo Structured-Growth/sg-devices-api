@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "./app/providers";
 import { AppMock } from "./app/app.mock";
-import { container, generateApiDocs, Lifecycle } from "@structured-growth/microservice-sdk";
+import { container, generateApiDocs, generateEmitsManifest, Lifecycle } from "@structured-growth/microservice-sdk";
 import { program } from "commander";
 import { Message } from "aws-sdk/clients/sqs";
 import { min } from "lodash";
@@ -54,6 +54,18 @@ program
 				servers: (process.env.API_DOCS_HOST_LIST || "").split(",").map((url) => ({ url })),
 			},
 		} as any);
+		process.exit();
+	});
+
+program
+	.command("events")
+	.description("Generate emits manifest")
+	.action(async () => {
+		container.register("App", AppMock, { lifecycle: Lifecycle.Singleton });
+		const app = container.resolve<AppMock>("App");
+		await app.ready;
+		const entries = generateEmitsManifest();
+		console.log(`Generated emits manifest with ${entries.length} entr${entries.length === 1 ? "y" : "ies"}`);
 		process.exit();
 	});
 
